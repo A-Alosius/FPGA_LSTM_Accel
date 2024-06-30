@@ -373,7 +373,7 @@ class LSTM_Cell(Component):
         begin
             if rising_edge(clk) then
                 if long_update_done = '1' then
-                    new_long <= new_long_memory;
+                    new_long <= new_long_memory/1000;
                     {'scaled_down_tmp <= new_long_memory/1000;' if (type(self.input_data['input_weights']) != list) else 
                      "for i in 0 to new_long_memory'length loop\n\tnew_long_memory(i) <= new_long_memory(i)/1000;\nend loop;"}
                     scale_done <= '1';
@@ -460,6 +460,7 @@ class LSTM_Unit(Component):
         conf = Configuration(self.input_shape, self.weight_shape, self.n_inputs)
         print(conf.writeToFle())
         print(lstm_cell.writeToFle())
+        arr = 0 if self.input_shape[0] == 1 and self.input_shape[1] == 1 else 1
         """
         return complete VHDL definition of Gate
         """
@@ -476,8 +477,8 @@ class LSTM_Unit(Component):
         signal unit2_done: std_logic;
         signal unit3_done: std_logic;
         
-        signal short : input_type;
-        signal long  : input_type; -- consider making it input of lstm_unit or instantiate
+        signal short : input_type := {'0' if arr != 1 else '(0, 0, 0, 0)'};
+        signal long  : input_type := {'0' if arr != 1 else '(0, 0, 0, 0)'}; -- consider making it input of lstm_unit or instantiate
 
         signal short1: input_type;
         signal long1 : input_type;
