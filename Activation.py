@@ -223,7 +223,6 @@ class Activate_Vector(Component):
 
         return f"""
         {VHDL_LIBRARIES}
-        {act.getComponent()}
 
         {VHDL_LIBRARIES}
         {VHDL_LIBRARY_DECLARATION}
@@ -231,6 +230,8 @@ class Activate_Vector(Component):
         {self.getEntity()}
 
         architecture Behavioral of {self.name} is
+        {act.getComponent()}
+        
         signal tmp_output : output_row;
         signal tmp_done : std_logic_vector(0 to vector'length-1);
         begin

@@ -30,7 +30,7 @@ class Configuration(Component):
             -- input types
             {'type input_row is array (0 to n_col) of const_int;' if arr else ''}
             {'type input_type is array (0 to n_row) of input_row;' if arr else "subtype input_type is integer range integer'low to integer'high;"}
-            type input_array is array(0 to {self.n_inputs-1}) of input_type;
+            
             -- gate constants
             constant n_w_row : const_int := {self.weight_shape[0]-1};
             constant n_w_col : const_int := {self.weight_shape[1]-1};
@@ -40,6 +40,7 @@ class Configuration(Component):
             -- output type
             {'type output_row is array(0 to n_w_row) of const_int;' if arr else ''}
             {'type output_type is array (0 to n_row) of output_row;' if arr else "subtype output_type is integer range integer'low to integer'high;"}
+            type input_array is array(0 to {self.n_inputs-1}) of output_type;
         end package;
         """
         

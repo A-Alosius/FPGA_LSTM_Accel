@@ -12,7 +12,7 @@
             -- input types
             type input_row is array (0 to n_col) of const_int;
             type input_type is array (0 to n_row) of input_row;
-            type input_array is array(0 to 3) of input_type;
+            
             -- gate constants
             constant n_w_row : const_int := 3;
             constant n_w_col : const_int := 3;
@@ -22,5 +22,6 @@
             -- output type
             type output_row is array(0 to n_w_row) of const_int;
             type output_type is array (0 to n_row) of output_row;
+            type input_array is array(0 to 3) of output_type;
         end package;
         

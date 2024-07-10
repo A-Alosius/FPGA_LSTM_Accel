@@ -28,9 +28,9 @@ use work.config.all;
             port(
                 clk           : in std_logic;
                 EN            : in std_logic;
-                input         : in input_type;
-                long          : in input_type;
-                short         : in input_type;
+                input         : in output_type;
+                long          : in output_type;
+                short         : in output_type;
                 new_long      : out output_type;
                 new_short     : out output_type;
                 done          : out std_logic
@@ -42,20 +42,20 @@ use work.config.all;
         signal unit2_done: std_logic;
         signal unit3_done: std_logic;
         
-        signal short : input_type := (0, 0, 0, 0);
-        signal long  : input_type := (0, 0, 0, 0); -- consider making it input of lstm_unit or instantiate
+        signal short : output_type := (0, 0, 0, 0);
+        signal long  : output_type := (0, 0, 0, 0); -- consider making it input of lstm_unit or instantiate
 
-        signal short1: input_type;
-        signal long1 : input_type;
+        signal short1: output_type;
+        signal long1 : output_type;
 
-        signal short2: input_type;
-        signal long2 : input_type;
+        signal short2: output_type;
+        signal long2 : output_type;
 
-        signal short3: input_type;
-        signal long3 : input_type;
+        signal short3: output_type;
+        signal long3 : output_type;
 
         -- short4 is the output so is netted to the unit output
-        signal long4 : input_type;
+        signal long4 : output_type;
 
         begin
         

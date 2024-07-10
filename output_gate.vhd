@@ -15,15 +15,15 @@ use work.config.all;
             port(
                 clk           : in std_logic;
                 EN            : in std_logic;
-                input         : in input_type;
-                short         : in input_type;
+                input         : in output_type;
+                short         : in output_type;
                 output        : out output_type;
                 done          : out std_logic
             );
 
             -- declare and instantiate weight and biases for each gate here
             signal input_weights : weight_type := ((109, 678, -347, -836),(35, 818, 160, 56),(2472, 299, 151, -1184),(1474, 857, 292, 883));
-            signal gate_biases  : output_type   := ((0, 0, 0, 0));
+            signal gate_biases  : output_type   := (0, 0, 0, 0);
             signal short_weights : weight_type := ((434, 1395, -971, -234),(181, 563, 9, 1849),(179, 499, 27, 1168),(-1000, -160, -471, 89));
         end entity output_gate;
         
@@ -34,7 +34,7 @@ use work.config.all;
             port(
                 clk           : in std_logic;
                 EN            : in std_logic;
-                mat1          : in input_type;
+                mat1          : in output_type;
                 mat2          : in weight_type;
                 mat12         : out output_type;
                 done          : out std_logic
@@ -182,7 +182,7 @@ use work.config.all;
             EN     => scale_done,
             vector => scaled_down_tmp(i),
             result => output(i),
-            done   => tmp_activate_done
+            done   => tmp_activate_done(i)
         );
         
         end generate activate;

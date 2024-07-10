@@ -5,17 +5,6 @@ use IEEE.STD_LOGIC_1164.all;
 use IEEE.NUMERIC_STD.all;
 -- use IEEE.fixed_pkg.all;
 
-        
-        component tanh_activation is
-            port (
-                clk    : in std_logic;
-                en     : in std_logic;
-                num    : in integer;
-                result : out integer;
-                done   : out std_logic
-            );
-        end component;
-        
 
         
 library IEEE;
@@ -41,6 +30,18 @@ use work.config.all;
         
 
         architecture Behavioral of vector_activation_tanh is
+        
+        component tanh_activation is
+            port (
+                clk    : in std_logic;
+                en     : in std_logic;
+                num    : in integer;
+                result : out integer;
+                done   : out std_logic
+            );
+        end component;
+        
+        
         signal tmp_output : output_row;
         signal tmp_done : std_logic_vector(0 to vector'length-1);
         begin

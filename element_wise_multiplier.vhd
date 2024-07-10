@@ -19,9 +19,9 @@ use work.config.all;
                 mat12         : out output_type;
                 done          : out std_logic
             );
-            function vect_mul(signal vect1:input_row; signal vect2:input_row)
-                return input_row is
-                variable row: input_row;
+            function vect_mul(signal vect1:output_row; signal vect2:output_row)
+                return output_row is
+                variable row: output_row;
                 begin
                 for i in 0 to vect2'length(1)-1 loop
                     row(i) := vect1(i) * vect2(i);

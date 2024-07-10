@@ -242,12 +242,12 @@ class MatrixMultiplier(Component):
             port(
                 clk           : in std_logic;
                 EN            : in std_logic;
-                mat1          : in input_type;
+                mat1          : in output_type;
                 mat2          : in weight_type;
                 mat12         : out output_type;
                 done          : out std_logic
             );
-            function vect_mul(signal vect1:input_row; signal vect2:weight_row)
+            function vect_mul(signal vect1:output_row; signal vect2:weight_row)
                 return const_int is
                 variable sum: const_int := 0;
                 begin
@@ -265,7 +265,7 @@ class MatrixMultiplier(Component):
             port(
                 clk           : in std_logic;
                 EN            : in std_logic;
-                mat1          : in input_type;
+                mat1          : in output_type;
                 mat2          : in weight_type;
                 mat12         : out output_type;
                 done          : out std_logic
@@ -294,7 +294,6 @@ class MatrixMultiplier(Component):
         architecture Behavioral of {self.name} is
         begin
             process (clk)
-            variable tmp : const_int;
             variable tmp_out : output_type;
             begin
                 if rising_edge(clk) then
@@ -334,9 +333,9 @@ class ElementWiseMultiplier(Component):
                 mat12         : out output_type;
                 done          : out std_logic
             );
-            function vect_mul(signal vect1:input_row; signal vect2:input_row)
-                return input_row is
-                variable row: input_row;
+            function vect_mul(signal vect1:output_row; signal vect2:output_row)
+                return output_row is
+                variable row: output_row;
                 begin
                 for i in 0 to vect2'length(1)-1 loop
                     row(i) := vect1(i) * vect2(i);

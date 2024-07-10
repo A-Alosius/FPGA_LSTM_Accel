@@ -60,8 +60,8 @@ class Gate(Component):
             port(
                 clk           : in std_logic;
                 EN            : in std_logic;
-                input         : in input_type;
-                short         : in input_type;
+                input         : in output_type;
+                short         : in output_type;
                 output        : out output_type;
                 done          : out std_logic
             );
@@ -73,14 +73,14 @@ class Gate(Component):
         end entity {self.name};
         """
 
-    def getComponent(self)->str:
+    def getComponent(self)->str:    
         return f"""
         component {self.name} is
             port(
                 clk           : in std_logic;
                 EN            : in std_logic;
-                input         : in input_type;
-                short         : in input_type;
+                input         : in output_type;
+                short         : in output_type;
                 output        : out output_type;
                 done          : out std_logic
             );
@@ -188,7 +188,8 @@ class Gate(Component):
         begin
             if rising_edge(clk) then
                 if long_done = '1' then
-                    scaled_down_tmp <= long_tmp/1000;
+                     {'scaled_down_tmp <= long_tmp/1000;' if (type(self.input_data['input_weights']) != list) else 
+                     "for i in 0 to long_tmp'length-1 loop\n\tfor j in 0 to long_tmp(i)'length-1 loop\n\tscaled_down_tmp(i)(j) <= long_tmp(i)(j)/1000;\n\tend loop;\nend loop;"}
                     scale_done <= '1';
                 end if;
             end if;
@@ -196,7 +197,7 @@ class Gate(Component):
 
         {"activate : for i in 0 to long_tmp'length - 1 generate" if (type(self.input_weights) == list) else ""}
             {(sig.getInstance('clk', 'scale_done', 'scaled_down_tmp', 'output', 'activate_done') if self.activation == "sig" else tanh.getInstance('clk', 'scale_done', 'scaled_down_tmp' , 'output', 'activate_done')) if (type(self.input_weights) != list) else ""}
-            {(act.getInstance('clk', 'scale_done', 'scaled_down_tmp(i)', 'output(i)', 'tmp_activate_done')) if (type(self.input_weights) == list) else ""}
+            {(act.getInstance('clk', 'scale_done', 'scaled_down_tmp(i)', 'output(i)', 'tmp_activate_done(i)')) if (type(self.input_weights) == list) else ""}
         {"end generate activate;" if (type(self.input_weights) == list) else ""}
 
         process(clk)
@@ -239,9 +240,9 @@ class LSTM_Cell(Component):
             port(
                 clk           : in std_logic;
                 EN            : in std_logic;
-                input         : in input_type;
-                long          : in input_type;
-                short         : in input_type;
+                input         : in output_type;
+                long          : in output_type;
+                short         : in output_type;
                 new_long      : out output_type;
                 new_short     : out output_type;
                 done          : out std_logic
@@ -254,9 +255,9 @@ class LSTM_Cell(Component):
             port(
                 clk           : in std_logic;
                 EN            : in std_logic;
-                input         : in input_type;
-                long          : in input_type;
-                short         : in input_type;
+                input         : in output_type;
+                long          : in output_type;
+                short         : in output_type;
                 new_long      : out output_type;
                 new_short     : out output_type;
                 done          : out std_logic
@@ -388,7 +389,7 @@ class LSTM_Cell(Component):
             if rising_edge(clk) then
                 if long_update_done = '1' then
                     {'scaled_down_tmp <= new_long_memory/1000;' if (type(self.input_data['input_weights']) != list) else 
-                     "for i in 0 to new_long_memory'length-1 loop\n\tfor j in 0 to new_long_memory(i)'length-1 loop\n\tnew_long_memory(i)(j) <= new_long_memory(i)(j)/1000;\n\tend loop;\nend loop;"}
+                     "for i in 0 to new_long_memory'length-1 loop\n\tfor j in 0 to new_long_memory(i)'length-1 loop\n\tscaled_down_tmp(i)(j) <= new_long_memory(i)(j)/1000;\n\tend loop;\nend loop;"}
                     scale_done <= '1';
                 end if;
             end if;
@@ -396,7 +397,7 @@ class LSTM_Cell(Component):
 
         {"activate : for i in 0 to new_long_memory'length - 1 generate" if (type(self.input_data['input_weights']) == list) else ""}
             {tanh.getInstance('clk', 'scale_done', 'scaled_down_tmp', 'output_tmp', 'tmp_active_done') if type(self.input_data['input_weights']) != list else ""}
-            {activate_vect.getInstance('clk,', 'scale_done', 'scaled_down_tmp(i)', 'result(i)', 'tmp_activate_done') if type(self.input_data['input_weights']) == list else ""}
+            {activate_vect.getInstance('clk', 'scale_done', 'scaled_down_tmp(i)', 'result(i)', 'tmp_activate_done') if type(self.input_data['input_weights']) == list else ""}
         {"end generate activate;" if (type(self.input_data['input_weights']) == list) else ""}
 
         {elmul.getInstance('clk', 'tmp_active_done', 'output_tmp', 'output_gate_output', 'tmp_new_short', 'short_scale_done')
@@ -408,7 +409,7 @@ class LSTM_Cell(Component):
             if rising_edge(clk) then
                 if short_scale_done = '1' then
                     {'new_short <= tmp_new_short/1000;' if (type(self.input_data['input_weights']) != list)
-                     else "for i in 0 to new_short'length loop\n\tnew_short(i) <= new_short(i)/1000;\nend loop;"}
+                     else "for i in 0 to new_short'length-1 loop\n\t\tfor j in 0 to new_short(0)'length-1 loop\n\tnew_short(i)(j) <= tmp_new_short(i)(j/1000;\nend loop;"}
                     done <= '1';
                 end if;
             end if;
@@ -491,20 +492,20 @@ class LSTM_Unit(Component):
         signal unit2_done: std_logic;
         signal unit3_done: std_logic;
         
-        signal short : input_type := {'0' if arr != 1 else '(0, 0, 0, 0)'};
-        signal long  : input_type := {'0' if arr != 1 else '(0, 0, 0, 0)'}; -- consider making it input of lstm_unit or instantiate
+        signal short : output_type := {'0' if arr != 1 else '(0, 0, 0, 0)'};
+        signal long  : output_type := {'0' if arr != 1 else '(0, 0, 0, 0)'}; -- consider making it input of lstm_unit or instantiate
 
-        signal short1: input_type;
-        signal long1 : input_type;
+        signal short1: output_type;
+        signal long1 : output_type;
 
-        signal short2: input_type;
-        signal long2 : input_type;
+        signal short2: output_type;
+        signal long2 : output_type;
 
-        signal short3: input_type;
-        signal long3 : input_type;
+        signal short3: output_type;
+        signal long3 : output_type;
 
         -- short4 is the output so is netted to the unit output
-        signal long4 : input_type;
+        signal long4 : output_type;
 
         begin
         {lstm_cell.getInstance('clk', 'EN', 'inputs(0)', 'long', 'short', 'long1', 'short1', 'unit1_done')}

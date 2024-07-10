@@ -15,9 +15,9 @@ use work.config.all;
             port(
                 clk           : in std_logic;
                 EN            : in std_logic;
-                input         : in input_type;
-                long          : in input_type;
-                short         : in input_type;
+                input         : in output_type;
+                long          : in output_type;
+                short         : in output_type;
                 new_long      : out output_type;
                 new_short     : out output_type;
                 done          : out std_logic
@@ -31,8 +31,8 @@ use work.config.all;
             port(
                 clk           : in std_logic;
                 EN            : in std_logic;
-                input         : in input_type;
-                short         : in input_type;
+                input         : in output_type;
+                short         : in output_type;
                 output        : out output_type;
                 done          : out std_logic
             );
@@ -43,8 +43,8 @@ use work.config.all;
             port(
                 clk           : in std_logic;
                 EN            : in std_logic;
-                input         : in input_type;
-                short         : in input_type;
+                input         : in output_type;
+                short         : in output_type;
                 output        : out output_type;
                 done          : out std_logic
             );
@@ -55,8 +55,8 @@ use work.config.all;
             port(
                 clk           : in std_logic;
                 EN            : in std_logic;
-                input         : in input_type;
-                short         : in input_type;
+                input         : in output_type;
+                short         : in output_type;
                 output        : out output_type;
                 done          : out std_logic
             );
@@ -67,8 +67,8 @@ use work.config.all;
             port(
                 clk           : in std_logic;
                 EN            : in std_logic;
-                input         : in input_type;
-                short         : in input_type;
+                input         : in output_type;
+                short         : in output_type;
                 output        : out output_type;
                 done          : out std_logic
             );
@@ -79,7 +79,7 @@ use work.config.all;
             port(
                 clk           : in std_logic;
                 EN            : in std_logic;
-                mat1          : in input_type;
+                mat1          : in output_type;
                 mat2          : in weight_type;
                 mat12         : out output_type;
                 done          : out std_logic
@@ -268,7 +268,7 @@ use work.config.all;
                 if long_update_done = '1' then
                     for i in 0 to new_long_memory'length-1 loop
 	for j in 0 to new_long_memory(i)'length-1 loop
-	new_long_memory(i)(j) <= new_long_memory(i)(j)/1000;
+	scaled_down_tmp(i)(j) <= new_long_memory(i)(j)/1000;
 	end loop;
 end loop;
                     scale_done <= '1';
@@ -280,7 +280,7 @@ end loop;
             
             
         vector_activation_tanh_inst_0: vector_activation_tanh port map(
-            clk    => clk,,
+            clk    => clk,
             EN     => scale_done,
             vector => scaled_down_tmp(i),
             result => result(i),
@@ -304,8 +304,9 @@ end loop;
         begin
             if rising_edge(clk) then
                 if short_scale_done = '1' then
-                    for i in 0 to new_short'length loop
-	new_short(i) <= new_short(i)/1000;
+                    for i in 0 to new_short'length-1 loop
+		for j in 0 to new_short(0)'length-1 loop
+	new_short(i)(j) <= tmp_new_short(i)(j/1000;
 end loop;
                     done <= '1';
                 end if;
