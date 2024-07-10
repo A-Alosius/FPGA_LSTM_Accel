@@ -88,7 +88,7 @@ class HigherBiasAdder(Component):
             port(
                 clk           : in std_logic;
                 EN            : in std_logic;
-                input_vector  : in input_row;
+                input_vector  : in output_type;
                 bias          : in output_type;
                 sum           : out output_type;
                 done          : out std_logic
@@ -102,7 +102,7 @@ class HigherBiasAdder(Component):
             port(
                 clk           : in std_logic;
                 EN            : in std_logic;
-                input_vector  : in input_row;
+                input_vector  : in output_type;
                 bias          : in output_type;
                 sum           : out output_type;
                 done          : out std_logic
@@ -137,14 +137,16 @@ class HigherBiasAdder(Component):
         begin
             process(clk)
                 variable tmp_sum : output_type;
-                variable tmp_arr : input_row;
+                variable tmp_arr : output_type;
                 begin
                     if rising_edge(clk) then
-                        if (en = '1') then
-                            tmp_arr := arr;
-                        end if;
-                        for i in 0 to (tmp_arr'length-1) loop
-                            tmp_sum(i) := tmp_arr(i) + bias(i);
+                       -- if (en = '1') then
+                         --   tmp_arr := input_vector;
+                        --end if;
+                        for i in 0 to (input_vector'length-1) loop
+                            for j in 0 to input_vector(i)'length-1 loop
+                                tmp_sum(i)(j) := input_vector(i)(j) + bias(i)(j);
+                            end loop;
                         end loop;
                         sum <= tmp_sum;
                         done <= '1';
@@ -327,9 +329,9 @@ class ElementWiseMultiplier(Component):
             port(
                 clk           : in std_logic;
                 EN            : in std_logic;
-                mat1          : in input_type;
-                mat2          : in input_type;
-                mat12         : out input_type;
+                mat1          : in output_type;
+                mat2          : in output_type;
+                mat12         : out output_type;
                 done          : out std_logic
             );
             function vect_mul(signal vect1:input_row; signal vect2:input_row)
@@ -350,9 +352,9 @@ class ElementWiseMultiplier(Component):
             port(
                 clk           : in std_logic;
                 EN            : in std_logic;
-                mat1          : in input_type;
-                mat2          : in input_type;
-                mat12         : out input_type;
+                mat1          : in output_type;
+                mat2          : in output_type;
+                mat12         : out output_type;
                 done          : out std_logic
             );
         end component;
@@ -380,12 +382,12 @@ class ElementWiseMultiplier(Component):
         begin
             process (clk)
             variable tmp : const_int;
-            variable tmp_out : input_type;
+            variable tmp_out : output_type;
             begin
                 if rising_edge(clk) then
                     if en = '1' then
                         for i in 0 to mat1'length-1 loop
-                            tmp_out(i)(j) := vect_mul(mat1(i), mat2(j));
+                            tmp_out(i) := vect_mul(mat1(i), mat2(i));
                         end loop;
                         mat12 <= tmp_out;
                         done <= '1';

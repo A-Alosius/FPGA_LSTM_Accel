@@ -91,7 +91,7 @@ use work.config.all;
             port(
                 clk           : in std_logic;
                 EN            : in std_logic;
-                input_vector  : in input_row;
+                input_vector  : in output_type;
                 bias          : in output_type;
                 sum           : out output_type;
                 done          : out std_logic
@@ -114,10 +114,21 @@ use work.config.all;
             port(
                 clk           : in std_logic;
                 EN            : in std_logic;
-                mat1          : in input_type;
-                mat2          : in input_type;
-                mat12         : out input_type;
+                mat1          : in output_type;
+                mat2          : in output_type;
+                mat12         : out output_type;
                 done          : out std_logic
+            );
+        end component;
+        
+        
+        component vector_activation_tanh is
+            port (
+                clk    : in std_logic;
+                en     : in std_logic;
+                vector : in output_row;
+                result : out output_row;
+                done   : out std_logic
             );
         end component;
         
@@ -137,8 +148,8 @@ use work.config.all;
         signal update_long_en         : std_logic;
         signal long_update_done       : std_logic;
         signal sum_update_en          : std_logic;
-        signal long_tmp1_done        : std_logic;
-        signal long_tmp2_done        : std_logic;
+        signal long_tmp1_done         : std_logic;
+        signal long_tmp2_done         : std_logic;
 
         signal long_tmp1              : output_type;
         signal long_tmp2              : output_type;
@@ -255,23 +266,25 @@ use work.config.all;
         begin
             if rising_edge(clk) then
                 if long_update_done = '1' then
-                    new_long <= new_long_memory/1000;
-                    for i in 0 to new_long_memory'length loop
-	new_long_memory(i) <= new_long_memory(i)/1000;
+                    for i in 0 to new_long_memory'length-1 loop
+	for j in 0 to new_long_memory(i)'length-1 loop
+	new_long_memory(i)(j) <= new_long_memory(i)(j)/1000;
+	end loop;
 end loop;
                     scale_done <= '1';
                 end if;
             end if;
         end process;
 
-        activate : for i in 0 to long_tmp'length - 1 generate
+        activate : for i in 0 to new_long_memory'length - 1 generate
             
-        tanh_activation_inst_1: tanh_activation port map(
-            clk    => clk,
+            
+        vector_activation_tanh_inst_0: vector_activation_tanh port map(
+            clk    => clk,,
             EN     => scale_done,
-            num    => scaled_down_tmp(i),
-            result => output_tmp(i),
-            done   => tmp_active_done
+            vector => scaled_down_tmp(i),
+            result => result(i),
+            done   => tmp_activate_done
         );
         
         end generate activate;

@@ -110,7 +110,7 @@ class Sigmoid(Activation):
         """
     
 class Tanh(Activation):
-    """Sigmoid activation function: sig(x) using ROM"""
+    """Tanh activation function: tanh(x) using ROM"""
 
     @property
     def name(self):
@@ -163,6 +163,84 @@ class Tanh(Activation):
                     else
                         done <= '0';
                     end if;
+                end if;
+            end process;
+        end behavioral;
+        """
+    
+class Activate_Vector(Component):
+    count = 0
+    def __init__(self, activation) -> None:
+        self.activation = activation
+    
+    @property
+    def name(self):
+        return f"vector_activation_{self.activation}"
+    
+    def getEntity(self):
+        return f"""
+        entity {self.name} is
+            port (
+                clk    : in std_logic;
+                en     : in std_logic;
+                vector : in output_row;
+                result : out output_row;
+                done   : out std_logic
+            );
+        end {self.name};
+        """
+    
+    def getComponent(self):
+        return f"""
+        component {self.name} is
+            port (
+                clk    : in std_logic;
+                en     : in std_logic;
+                vector : in output_row;
+                result : out output_row;
+                done   : out std_logic
+            );
+        end component;
+        """
+    
+    def getInstance(self, clk, EN, vector, result, done):
+        self.count += 1
+        return f"""
+        {self.name}_inst_{self.count-1}: {self.name} port map(
+            clk    => {clk},
+            EN     => {EN},
+            vector => {vector},
+            result => {result},
+            done   => {done}
+        );
+        """
+    
+    def toVHDL(self):
+        if self.activation == 'sig':
+            act = Sigmoid()
+        else:
+            act = Tanh()
+
+        return f"""
+        {VHDL_LIBRARIES}
+        {act.getComponent()}
+
+        {VHDL_LIBRARIES}
+        {VHDL_LIBRARY_DECLARATION}
+        use work.dtypes.all;
+        {self.getEntity()}
+
+        architecture Behavioral of {self.name} is
+        signal tmp_output : output_row;
+        signal tmp_done : std_logic_vector(0 to vector'length-1);
+        begin
+            vector_activate: for i in 0 to vector'length-1 generate
+                {act.getInstance('clk', 'en', 'vector(i)', 'tmp_output(i)', 'tmp_done(i)')}
+            end generate vector_activate;
+            process(clk)
+            begin
+                if (tmp_done(tmp_done'length-1) = '1') then
+                    done <= '1';
                 end if;
             end process;
         end behavioral;

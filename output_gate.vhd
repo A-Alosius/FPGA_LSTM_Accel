@@ -23,7 +23,7 @@ use work.config.all;
 
             -- declare and instantiate weight and biases for each gate here
             signal input_weights : weight_type := ((109, 678, -347, -836),(35, 818, 160, 56),(2472, 299, 151, -1184),(1474, 857, 292, 883));
-            signal gate_biases  : output_type   := (0, 0, 0, 0);
+            signal gate_biases  : output_type   := ((0, 0, 0, 0));
             signal short_weights : weight_type := ((434, 1395, -971, -234),(181, 563, 9, 1849),(179, 499, 27, 1168),(-1000, -160, -471, 89));
         end entity output_gate;
         
@@ -46,7 +46,7 @@ use work.config.all;
             port(
                 clk           : in std_logic;
                 EN            : in std_logic;
-                input_vector  : in input_row;
+                input_vector  : in output_type;
                 bias          : in output_type;
                 sum           : out output_type;
                 done          : out std_logic
@@ -60,6 +60,17 @@ use work.config.all;
                 en     : in std_logic;
                 num    : in integer;
                 result : out integer;
+                done   : out std_logic
+            );
+        end component;
+        
+        
+        component vector_activation_sig is
+            port (
+                clk    : in std_logic;
+                en     : in std_logic;
+                vector : in output_row;
+                result : out output_row;
                 done   : out std_logic
             );
         end component;
@@ -84,6 +95,7 @@ use work.config.all;
         signal long_remember_done : std_logic;
 
         signal activate_done : std_logic;
+        signal tmp_activate_done : std_logic_vector(0 to long_tmp'length-1);
         ------------------------------------------
 
         begin
@@ -164,15 +176,23 @@ use work.config.all;
 
         activate : for i in 0 to long_tmp'length - 1 generate
             
-        sigmoid_inst_2: sigmoid port map(
+            
+        vector_activation_sig_inst_0: vector_activation_sig port map(
             clk    => clk,
             EN     => scale_done,
-            num    => scaled_down_tmp(i),
+            vector => scaled_down_tmp(i),
             result => output(i),
-            done   => activate_done
+            done   => tmp_activate_done
         );
         
         end generate activate;
+
+        process(clk)
+        begin
+            if tmp_acivate_done(tmp_activate_done'length-1) = '1' then
+                activate_done <= '1';
+            end if;
+        end process;
 
         process (clk)
         begin

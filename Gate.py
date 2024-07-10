@@ -1,6 +1,6 @@
 from Constants import VHDL_LIBRARIES, VHDL_LIBRARY_DECLARATION
 from Component import Component
-from Activation import Sigmoid, Tanh
+from Activation import Sigmoid, Tanh, Activate_Vector
 from Arithmetic import MatrixMultiplier, Adder, HigherBiasAdder, Multiplier, ElementWiseMultiplier
 from Config_generator import Configuration
 
@@ -106,6 +106,8 @@ class Gate(Component):
         hadder.writeToFle()
         sig.writeToFle()
         matmul.writeToFle()
+        act = Activate_Vector(self.activation)
+        act.writeToFle()
         
         """
         return complete VHDL definition of Gate
@@ -120,6 +122,7 @@ class Gate(Component):
         {matmul.getComponent() if (type(self.input_weights) == list) else mul.getComponent()}
         {hadder.getComponent() if (type(self.gate_biases) == list) else add.getComponent()}
         {sig.getComponent() if self.activation == 'sig' else tanh.getComponent()}
+        {act.getComponent() if (type(self.input_weights) == list) else ""}
 
         -- temporary variables to store intermediate computations
         signal long_tmp   : output_type;
@@ -140,6 +143,7 @@ class Gate(Component):
         signal long_remember_done : std_logic;
 
         signal activate_done : std_logic;
+        {"signal tmp_activate_done : std_logic_vector(0 to long_tmp'length-1);" if (type(self.input_weights) == list) else ""}
         ------------------------------------------
 
         begin
@@ -191,8 +195,16 @@ class Gate(Component):
         end process;
 
         {"activate : for i in 0 to long_tmp'length - 1 generate" if (type(self.input_weights) == list) else ""}
-            {sig.getInstance('clk', 'scale_done', ('scaled_down_tmp(i)' if (type(self.input_weights) == list) else 'scaled_down_tmp'), ('output(i)' if (type(self.input_weights) == list) else 'output'), 'activate_done') if self.activation == "sig" else tanh.getInstance('clk', 'scale_done', ('scaled_down_tmp(i)' if (type(self.input_weights) == list) else 'scaled_down_tmp') , ('output(i)' if (type(self.input_weights) == list) else 'output'), 'activate_done')}
+            {(sig.getInstance('clk', 'scale_done', 'scaled_down_tmp', 'output', 'activate_done') if self.activation == "sig" else tanh.getInstance('clk', 'scale_done', 'scaled_down_tmp' , 'output', 'activate_done')) if (type(self.input_weights) != list) else ""}
+            {(act.getInstance('clk', 'scale_done', 'scaled_down_tmp(i)', 'output(i)', 'tmp_activate_done')) if (type(self.input_weights) == list) else ""}
         {"end generate activate;" if (type(self.input_weights) == list) else ""}
+
+        process(clk)
+        begin
+            if tmp_acivate_done(tmp_activate_done'length-1) = '1' then
+                activate_done <= '1';
+            end if;
+        end process;
 
         process (clk)
         begin
@@ -272,6 +284,7 @@ class LSTM_Cell(Component):
         inputGate = Gate('input_gate', self.input_data["input_weights"], self.input_data["gate_biases"], self.input_data["short_weights"], 'tanh')
         candidateGate = Gate('candidate_gate', self.candidate_data["input_weights"], self.candidate_data["gate_biases"], self.candidate_data["short_weights"], 'sig')
         outputGate = Gate('output_gate', self.output_data["input_weights"], self.output_data["gate_biases"], self.output_data["short_weights"], 'sig')
+        activate_vect = Activate_Vector('tanh')
 
         print(forgetGate.writeToFle())
         print(inputGate.writeToFle())
@@ -296,6 +309,7 @@ class LSTM_Cell(Component):
         {hadder.getComponent() if (type(self.input_data['gate_biases']) == list) else add.getComponent()}
         {tanh.getComponent()}
         {elmul.getComponent()}
+        {activate_vect.getComponent()}
 
         signal forget_gate_output     : output_type; -- long_remember percent
         signal forget_gate_done       : std_logic;
@@ -312,8 +326,8 @@ class LSTM_Cell(Component):
         signal update_long_en         : std_logic;
         signal long_update_done       : std_logic;
         signal sum_update_en          : std_logic;
-        signal long_tmp1_done        : std_logic;
-        signal long_tmp2_done        : std_logic;
+        signal long_tmp1_done         : std_logic;
+        signal long_tmp2_done         : std_logic;
 
         signal long_tmp1              : output_type;
         signal long_tmp2              : output_type;
@@ -374,14 +388,15 @@ class LSTM_Cell(Component):
             if rising_edge(clk) then
                 if long_update_done = '1' then
                     {'scaled_down_tmp <= new_long_memory/1000;' if (type(self.input_data['input_weights']) != list) else 
-                     "for i in 0 to new_long_memory'length loop\n\tnew_long_memory(i) <= new_long_memory(i)/1000;\nend loop;"}
+                     "for i in 0 to new_long_memory'length-1 loop\n\tfor j in 0 to new_long_memory(i)'length-1 loop\n\tnew_long_memory(i)(j) <= new_long_memory(i)(j)/1000;\n\tend loop;\nend loop;"}
                     scale_done <= '1';
                 end if;
             end if;
         end process;
 
-        {"activate : for i in 0 to long_tmp'length - 1 generate" if (type(self.input_data['input_weights']) == list) else ""}
-            {tanh.getInstance('clk', 'scale_done', ('scaled_down_tmp(i)' if (type(self.input_data['input_weights']) == list) else 'scaled_down_tmp'), ('output_tmp(i)' if (type(self.input_data['input_weights']) == list) else 'output_tmp'), 'tmp_active_done')}
+        {"activate : for i in 0 to new_long_memory'length - 1 generate" if (type(self.input_data['input_weights']) == list) else ""}
+            {tanh.getInstance('clk', 'scale_done', 'scaled_down_tmp', 'output_tmp', 'tmp_active_done') if type(self.input_data['input_weights']) != list else ""}
+            {activate_vect.getInstance('clk,', 'scale_done', 'scaled_down_tmp(i)', 'result(i)', 'tmp_activate_done') if type(self.input_data['input_weights']) == list else ""}
         {"end generate activate;" if (type(self.input_data['input_weights']) == list) else ""}
 
         {elmul.getInstance('clk', 'tmp_active_done', 'output_tmp', 'output_gate_output', 'tmp_new_short', 'short_scale_done')

@@ -14,9 +14,9 @@ use work.config.all;
             port(
                 clk           : in std_logic;
                 EN            : in std_logic;
-                mat1          : in input_type;
-                mat2          : in input_type;
-                mat12         : out input_type;
+                mat1          : in output_type;
+                mat2          : in output_type;
+                mat12         : out output_type;
                 done          : out std_logic
             );
             function vect_mul(signal vect1:input_row; signal vect2:input_row)
@@ -34,12 +34,12 @@ use work.config.all;
         begin
             process (clk)
             variable tmp : const_int;
-            variable tmp_out : input_type;
+            variable tmp_out : output_type;
             begin
                 if rising_edge(clk) then
                     if en = '1' then
                         for i in 0 to mat1'length-1 loop
-                            tmp_out(i)(j) := vect_mul(mat1(i), mat2(j));
+                            tmp_out(i) := vect_mul(mat1(i), mat2(i));
                         end loop;
                         mat12 <= tmp_out;
                         done <= '1';
