@@ -1,9 +1,9 @@
 from Component import Component
 
 input = [[0., 0.25, 0.5, 1.], [0., 0.25, 0.5, 1.], [0., 0.25, 0.5, 1.], [0., 0.25, 0.5, 1.]] # 2x4
-weights =[[-1654, -486, -142, 1539], [1535, -2049, 253, -346], [1097, 892, -11, -9], [1181, 238, 1550, 935]] # 4x4
+# weights =[[-1654, -486, -142, 1539], [1535, -2049, 253, -346], [1097, 892, -11, -9], [1181, 238, 1550, 935]] # 4x4
 bias = [[0, 0.25, 0.5, 1], [1, 0.5, 0.25, 0]] # 2x4 same as expected output
-
+weights = 10
 class Configuration(Component):
     def __init__(self,input_shape, weight_shape, n_inputs):
         self.input_shape = input_shape

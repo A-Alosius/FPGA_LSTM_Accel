@@ -292,9 +292,9 @@ class MatrixMultiplier(Component):
         {VHDL_LIBRARY_DECLARATION}
         {self.getEntity()}
         architecture Behavioral of {self.name} is
-        begin
         signal in1 : output_row;
         signal in2 : weight_row;
+        begin
             process (clk)
             variable tmp_out : output_type;
             begin

@@ -32,14 +32,18 @@ use work.config.all;
         
         architecture Behavioral of matrix_multiplier is
         begin
+        signal in1 : output_row;
+        signal in2 : weight_row;
             process (clk)
             variable tmp_out : output_type;
             begin
                 if rising_edge(clk) then
                     if en = '1' then
                         for i in 0 to mat1'length-1 loop
+                            in1 <= mat1(i);
                             for j in 0 to mat2'length-1 loop
-                                tmp_out(i)(j) := vect_mul(mat1(i), mat2(j));
+                                in2 <= mat2(j);
+                                tmp_out(i) := vect_mul(in1, in2);
                             end loop;
                         end loop;
                         mat12 <= tmp_out;
