@@ -267,10 +267,10 @@ use work.config.all;
             if rising_edge(clk) then
                 if long_update_done = '1' then
                     for i in 0 to new_long_memory'length-1 loop
-	for j in 0 to new_long_memory(i)'length-1 loop
-	scaled_down_tmp(i)(j) <= new_long_memory(i)(j)/1000;
-	end loop;
-end loop;
+	                    for j in 0 to new_long_memory(i)'length-1 loop
+                            scaled_down_tmp(i)(j) <= new_long_memory(i)(j)/1000;
+                        end loop;
+                    end loop;
                     scale_done <= '1';
                 end if;
             end if;
@@ -284,7 +284,7 @@ end loop;
             EN     => scale_done,
             vector => scaled_down_tmp(i),
             result => result(i),
-            done   => tmp_activate_done
+            done   => tmp_activate_done(i)
         );
         
         end generate activate;
@@ -305,9 +305,10 @@ end loop;
             if rising_edge(clk) then
                 if short_scale_done = '1' then
                     for i in 0 to new_short'length-1 loop
-		for j in 0 to new_short(0)'length-1 loop
-	new_short(i)(j) <= tmp_new_short(i)(j/1000;
-end loop;
+                        for j in 0 to new_short(0)'length-1 loop
+                            new_short(i)(j) <= tmp_new_short(i)(j)/1000;
+                        end loop;
+                    end loop;
                     done <= '1';
                 end if;
             end if;

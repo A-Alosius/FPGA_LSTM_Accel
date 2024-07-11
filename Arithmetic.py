@@ -293,14 +293,18 @@ class MatrixMultiplier(Component):
         {self.getEntity()}
         architecture Behavioral of {self.name} is
         begin
+        signal in1 : output_row;
+        signal in2 : weight_row;
             process (clk)
             variable tmp_out : output_type;
             begin
                 if rising_edge(clk) then
                     if en = '1' then
                         for i in 0 to mat1'length-1 loop
+                            in1 <= mat1(i);
                             for j in 0 to mat2'length-1 loop
-                                tmp_out(i)(j) := vect_mul(mat1(i), mat2(j));
+                                in2 <= mat2(j);
+                                tmp_out(i) := vect_mul(in1, in2);
                             end loop;
                         end loop;
                         mat12 <= tmp_out;
@@ -378,6 +382,8 @@ class ElementWiseMultiplier(Component):
         {VHDL_LIBRARY_DECLARATION}
         {self.getEntity()}
         architecture Behavioral of {self.name} is
+        signal in1 : output_row;
+        signal in2 : output_row;
         begin
             process (clk)
             variable tmp : const_int;
@@ -386,7 +392,9 @@ class ElementWiseMultiplier(Component):
                 if rising_edge(clk) then
                     if en = '1' then
                         for i in 0 to mat1'length-1 loop
-                            tmp_out(i) := vect_mul(mat1(i), mat2(i));
+                            in1 <= mat1(i);
+                            in2 <= mat2(i);
+                            tmp_out(i) := vect_mul(in1, in2);
                         end loop;
                         mat12 <= tmp_out;
                         done <= '1';

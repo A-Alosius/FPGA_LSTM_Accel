@@ -202,7 +202,7 @@ class Gate(Component):
 
         process(clk)
         begin
-            if tmp_acivate_done(tmp_activate_done'length-1) = '1' then
+            if tmp_activate_done(tmp_activate_done'length-1) = '1' then
                 activate_done <= '1';
             end if;
         end process;
@@ -410,6 +410,7 @@ class LSTM_Cell(Component):
                 if short_scale_done = '1' then
                     {'new_short <= tmp_new_short/1000;' if (type(self.input_data['input_weights']) != list)
                      else "for i in 0 to new_short'length-1 loop\n\t\tfor j in 0 to new_short(0)'length-1 loop\n\tnew_short(i)(j) <= tmp_new_short(i)(j/1000;\nend loop;"}
+                    new_long <= scaled_down_tmp;
                     done <= '1';
                 end if;
             end if;
