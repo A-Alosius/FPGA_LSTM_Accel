@@ -200,12 +200,12 @@ class Gate(Component):
             {(act.getInstance('clk', 'scale_done', 'scaled_down_tmp(i)', 'output(i)', 'tmp_activate_done(i)')) if (type(self.input_weights) == list) else ""}
         {"end generate activate;" if (type(self.input_weights) == list) else ""}
 
-        {f"process(clk)
+        {'''process(clk)
         begin
             if tmp_activate_done(tmp_activate_done'length-1) = '1' then
                 activate_done <= '1';
             end if;
-        end process;" if (type(self.input_weights) == list) else ""}
+        end process;''' if (type(self.input_weights) == list) else ""}
 
         process (clk)
         begin
