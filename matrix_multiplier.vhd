@@ -14,12 +14,12 @@ use work.config.all;
             port(
                 clk           : in std_logic;
                 EN            : in std_logic;
-                mat1          : in input_type;
+                mat1          : in output_type;
                 mat2          : in weight_type;
                 mat12         : out output_type;
                 done          : out std_logic
             );
-            function vect_mul(signal vect1:input_row; signal vect2:weight_row)
+            function vect_mul(signal vect1:output_row; signal vect2:weight_row)
                 return const_int is
                 variable sum: const_int := 0;
                 begin
@@ -32,15 +32,18 @@ use work.config.all;
         
         architecture Behavioral of matrix_multiplier is
         begin
+        signal in1 : output_row;
+        signal in2 : weight_row;
             process (clk)
-            variable tmp : const_int;
             variable tmp_out : output_type;
             begin
                 if rising_edge(clk) then
                     if en = '1' then
                         for i in 0 to mat1'length-1 loop
+                            in1 <= mat1(i);
                             for j in 0 to mat2'length-1 loop
-                                tmp_out(i)(j) := vect_mul(mat1(i), mat2(j));
+                                in2 <= mat2(j);
+                                tmp_out(i) := vect_mul(in1, in2);
                             end loop;
                         end loop;
                         mat12 <= tmp_out;

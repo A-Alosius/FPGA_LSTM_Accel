@@ -15,40 +15,39 @@ use work.config.all;
             port(
                 clk           : in std_logic;
                 EN            : in std_logic;
-                input         : in input_type;
-                short         : in input_type;
+                input         : in output_type;
+                short         : in output_type;
                 output        : out output_type;
                 done          : out std_logic
             );
 
             -- declare and instantiate weight and biases for each gate here
-            signal input_weights : weight_type := ((109, 678, -347, -836),(35, 818, 160, 56),(2472, 299, 151, -1184),(1474, 857, 292, 883));
-            signal gate_biases  : output_type   := ((0, 0, 0, 0));
-            signal short_weights : weight_type := ((434, 1395, -971, -234),(181, 563, 9, 1849),(179, 499, 27, 1168),(-1000, -160, -471, 89));
+            signal input_weights : weight_type := 56;
+            signal gate_biases  : output_type   := 869757;
+            signal short_weights : weight_type := -1269;
         end entity output_gate;
         
 
         architecture Behavioral of output_gate is
         
-        component matrix_multiplier is
+        component multiplier is
             port(
                 clk           : in std_logic;
                 EN            : in std_logic;
-                mat1          : in input_type;
-                mat2          : in weight_type;
-                mat12         : out output_type;
+                num1, num2    : in const_int;
+                prod          : out const_int;
                 done          : out std_logic
             );
         end component;
         
         
-        component higher_adder is
+        component adder is
             port(
                 clk           : in std_logic;
                 EN            : in std_logic;
-                input_vector  : in output_type;
-                bias          : in output_type;
-                sum           : out output_type;
+                input         : in const_int;
+                bias          : in const_int;
+                sum           : out const_int;
                 done          : out std_logic
             );
         end component;
@@ -64,16 +63,6 @@ use work.config.all;
             );
         end component;
         
-        
-        component vector_activation_sig is
-            port (
-                clk    : in std_logic;
-                en     : in std_logic;
-                vector : in output_row;
-                result : out output_row;
-                done   : out std_logic
-            );
-        end component;
         
 
         -- temporary variables to store intermediate computations
@@ -95,27 +84,27 @@ use work.config.all;
         signal long_remember_done : std_logic;
 
         signal activate_done : std_logic;
-        signal tmp_activate_done : std_logic_vector(0 to long_tmp'length-1);
+        
         ------------------------------------------
 
         begin
             
-        matrix_multiplier_inst_6: matrix_multiplier port map(
+        multiplier_inst_6: multiplier port map(
             clk   => clk,
             EN    => EN,
-            mat1  => input,
-            mat2  => input_weights,
-            mat12 => input_C,
+            num1  => input,
+            num2  => input_weights,
+            prod  => input_c,
             done  => input_done
         );
         
             
-        matrix_multiplier_inst_7: matrix_multiplier port map(
+        multiplier_inst_7: multiplier port map(
             clk   => clk,
             EN    => EN,
-            mat1  => short,
-            mat2  => short_weights,
-            mat12 => short_c,
+            num1  => short,
+            num2  => short_weights,
+            prod  => short_c,
             done  => short_done
         );
         
@@ -132,10 +121,10 @@ use work.config.all;
             end process;
             
             
-        higher_adder_inst_6: higher_adder port map(
+        adder_inst_6 : adder port map(
             clk          => clk,
             EN           => sum_en,
-            input_vector => input_c,
+            input        => input_c,
             bias         => short_c,
             sum          => tmp_sum,
             done         => sum_done
@@ -154,10 +143,10 @@ use work.config.all;
             end process;
 
             
-        higher_adder_inst_7: higher_adder port map(
+        adder_inst_7 : adder port map(
             clk          => clk,
             EN           => long_en,
-            input_vector => tmp_sum,
+            input        => tmp_sum,
             bias         => gate_biases,
             sum          => long_tmp,
             done         => long_done
@@ -168,28 +157,28 @@ use work.config.all;
         begin
             if rising_edge(clk) then
                 if long_done = '1' then
-                    scaled_down_tmp <= long_tmp/1000;
+                     scaled_down_tmp <= long_tmp/1000;
                     scale_done <= '1';
                 end if;
             end if;
         end process;
 
-        activate : for i in 0 to long_tmp'length - 1 generate
+        
             
-            
-        vector_activation_sig_inst_0: vector_activation_sig port map(
+        sigmoid_inst_2: sigmoid port map(
             clk    => clk,
             EN     => scale_done,
-            vector => scaled_down_tmp(i),
-            result => output(i),
-            done   => tmp_activate_done
+            num    => scaled_down_tmp,
+            result => output,
+            done   => activate_done
         );
         
-        end generate activate;
+            
+        
 
         process(clk)
         begin
-            if tmp_acivate_done(tmp_activate_done'length-1) = '1' then
+            if tmp_activate_done(tmp_activate_done'length-1) = '1' then
                 activate_done <= '1';
             end if;
         end process;
