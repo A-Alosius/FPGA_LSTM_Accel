@@ -1,4 +1,5 @@
 from Constants import VHDL_LIBRARIES, VHDL_LIBRARY_DECLARATION
+import os
 
 class Component:
     """
@@ -37,7 +38,9 @@ class Component:
         """
         write VHDL component to file
         """
-        with open(f'{self.name}.vhd', 'w') as file:
+        if not os.path.exists('vhdl_files'):
+            os.makedirs('vhdl_files')
+        with open(f'vhdl_files/{self.name}.vhd', 'w') as file:
             file.write(self.toVHDL())
 
         print("Done writing")
