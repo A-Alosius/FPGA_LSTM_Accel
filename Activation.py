@@ -242,6 +242,7 @@ class Activate_Vector(Component):
             begin
                 if (tmp_done(tmp_done'length-1) = '1') then
                     done <= '1';
+                    result <= tmp_output;
                 end if;
             end process;
         end behavioral;
