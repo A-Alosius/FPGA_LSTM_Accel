@@ -88,7 +88,7 @@ class HigherBiasAdder(Component):
             port(
                 clk           : in std_logic;
                 EN            : in std_logic;
-                input_vector  : in output_type;
+                input         : in output_type;
                 bias          : in output_type;
                 sum           : out output_type;
                 done          : out std_logic
@@ -102,7 +102,7 @@ class HigherBiasAdder(Component):
             port(
                 clk           : in std_logic;
                 EN            : in std_logic;
-                input_vector  : in output_type;
+                input         : in output_type;
                 bias          : in output_type;
                 sum           : out output_type;
                 done          : out std_logic
@@ -110,13 +110,13 @@ class HigherBiasAdder(Component):
         end component;
         """
     
-    def getInstance(self, clk, EN, input_vector, bias, sum, done) -> str:
+    def getInstance(self, clk, EN, input, bias, sum, done) -> str:
         self.count += 1
         return f"""
         {self.name}_inst_{self.count-1}: {self.name} port map(
             clk          => {clk},
             EN           => {EN},
-            input_vector => {input_vector},
+            input       => {input},
             bias         => {bias},
             sum          => {sum},
             done         => {done}
@@ -145,7 +145,7 @@ class HigherBiasAdder(Component):
                     if rising_edge(clk) then
                         for i in 0 to (mat1'length-1) loop
                             for j in 0 to mat1(i)'length-1 loop
-                                tmp_sum(i)(j) := input_vector(i)(j) + bias(i)(j);
+                                tmp_sum(i)(j) := input(i)(j) + bias(i)(j);
                             end loop;
                         end loop;
                         sum <= tmp_sum;
