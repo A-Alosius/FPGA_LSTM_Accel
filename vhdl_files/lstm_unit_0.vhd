@@ -39,25 +39,33 @@ use work.config.all;
         
 
         signal unit1_done: std_logic;
-        signal unit2_done: std_logic;
-        signal unit3_done: std_logic;
+		signal unit2_done: std_logic;
+		signal unit3_done: std_logic;
+		
         
-        signal short : output_type := (others => (others => 0));
-        signal long  : output_type := (others => (others => 0)); -- consider making it input of lstm_unit or instantiate
+        signal short : output_type;
+        signal long  : output_type ; -- input to first cell of lstm_unit
 
-        signal short1: output_type;
-        signal long1 : output_type;
+        signal short1 : output_type;
+		signal long1 : output_type;
 
-        signal short2: output_type;
-        signal long2 : output_type;
+		signal short2 : output_type;
+		signal long2 : output_type;
 
-        signal short3: output_type;
-        signal long3 : output_type;
+		signal short3 : output_type;
+		signal long3 : output_type;
 
-        -- short4 is the output so is netted to the unit output
-        signal long4 : output_type;
+		signal short4 : output_type;
+		signal long4 : output_type;
+
+		
 
         begin
+        short(0) <= (0, 0, 0, 0);
+			
+        long(0) <= (0, 0, 0, 0);
+			
+
         
         lstm_cell_inst_0: lstm_cell port map(
             clk          => clk,
@@ -81,7 +89,6 @@ use work.config.all;
             new_short    => short2,
             done         => unit2_done
         );
-        
         
         lstm_cell_inst_2: lstm_cell port map(
             clk          => clk,

@@ -516,50 +516,30 @@ class LSTM_Unit(Component):
         architecture Behavioral of {self.name} is
         {lstm_cell.getComponent()}
 
-        signal unit1_done: std_logic;
-        signal unit2_done: std_logic;
-        signal unit3_done: std_logic;
+        {''.join([f'signal unit{i+1}_done: std_logic;\n\t\t' for i in range(self.n_inputs-1)])}
         
-        signal short : output_type := {'0' if arr != 1 else '(others => (others => 0))'};
-        signal long  : output_type := {'0' if arr != 1 else '(others => (others => 0))'}; -- consider making it input of lstm_unit or instantiate
+        signal short : output_type{' := 0 ' if arr != 1 else ''};
+        signal long  : output_type {' :=0 ' if arr != 1 else ''}; -- input to first cell of lstm_unit
 
-        signal short1: output_type;
-        signal long1 : output_type;
-
-        signal short2: output_type;
-        signal long2 : output_type;
-
-        signal short3: output_type;
-        signal long3 : output_type;
-
-        -- short4 is the output so is netted to the unit output
-        signal long4 : output_type;
+        {''.join([f'signal short{i+1} : output_type;\n\t\tsignal long{i+1} : output_type;\n\n\t\t' for i in range(self.n_inputs)])}
 
         begin
+        {self.values([[0 for _ in range(self.input_shape[1])] for _ in range(self.input_shape[0])], 'short') if arr else ''}
+        {self.values([[0 for _ in range(self.input_shape[1])] for _ in range(self.input_shape[0])], 'long') if arr else ''}
+
         {lstm_cell.getInstance('clk', 'EN', 'inputs(0)', 'long', 'short', 'long1', 'short1', 'unit1_done')}
-        {lstm_cell.getInstance('clk', 'unit1_done', 'inputs(1)', 'long1', 'short1', 'long2', 'short2', 'unit2_done')}
-        {lstm_cell.getInstance('clk', 'unit2_done', 'inputs(2)', 'long2', 'short2', 'long3', 'short3', 'unit3_done')}
-        {lstm_cell.getInstance('clk', 'unit3_done', 'inputs(3)', 'long3', 'short3', 'long4', 'output', 'done')}
+        {''.join([lstm_cell.getInstance('clk', f'unit{i+1}_done', f'inputs({i+1})', f'long{i+1}', f'short{i+1}', f'long{i+2}', f'short{i+2}', f'unit{i+2}_done') for i in range(self.n_inputs-2)])}
+        {lstm_cell.getInstance('clk', f'unit{self.n_inputs-1}_done', f'inputs({self.n_inputs-1})', f'long{self.n_inputs-1}', f'short{self.n_inputs-1}', f'long{self.n_inputs}', 'output', 'done')}
 
     end Behavioral;
         """
 
 
 if __name__ == "__main__":
-    # forgetGate = Gate('forget', 2, 1, 4, 'sig')
-    # inputGate = Gate('input', 2, 1, 4, 'tanh')
-    # candidateGate = Gate('candidate', 2, 1, 4, 'sig')
-    # outputGate = Gate('output', 2, 1, 4, 'sig')
-    
-    # print(testGate.toVHDL())
-    # print(forgetGate.writeToFle())
-    # print(inputGate.writeToFle())
-    # print(candidateGate.writeToFle())
-    # print(outputGate.writeToFle())
     data = [{'input_weights': [[-1654, -486, -142, 1539], [1535, -2049, 253, -346], [1097, 892, -11, -9], [1181, 238, 1550, 935]], 'gate_biases': [0, 0, 0, 0], 'short_weights': [[-2247, -230, -1326, -66], [1615, -423, -1022, -1351], [-33, 46, -600, 2063], [495, 1572, -528, 227]]},
-{'input_weights': [[-545, 273, 1106, -1404], [1063, -1128, -1974, -207], [-311, -482, 1543, 627], [1075, 998, -202, 1171]], 'gate_biases': [0, 0, 0, 0], 'short_weights': [[-868, 1021, 77, -346], [-203, -109, -1647, -986], [1098, -1345, -318, -744], [1053, -313, -669, 988]]},
-{'input_weights': [[-766, 1392, -676, 116], [-433, 346, 1506, -2652], [181, 387, 544, 1434], [1748, -777, 1126, 1157]], 'gate_biases': [0, 0, 0, 0], 'short_weights': [[247, -582, -713, -1257], [1454, 81, 1163, -1622], [69, -234, 1634, -12], [383, -1670, 872, -969]]},
-{'input_weights': [[109, 678, -347, -836], [35, 818, 160, 56], [2472, 299, 151, -1184], [1474, 857, 292, 883]], 'gate_biases': [0, 0, 0, 0], 'short_weights': [[434, 1395, -971, -234], [181, 563, 9, 1849], [179, 499, 27, 1168], [-1000, -160, -471, 89]]}]
+            {'input_weights': [[-545, 273, 1106, -1404], [1063, -1128, -1974, -207], [-311, -482, 1543, 627], [1075, 998, -202, 1171]], 'gate_biases': [0, 0, 0, 0], 'short_weights': [[-868, 1021, 77, -346], [-203, -109, -1647, -986], [1098, -1345, -318, -744], [1053, -313, -669, 988]]},
+            {'input_weights': [[-766, 1392, -676, 116], [-433, 346, 1506, -2652], [181, 387, 544, 1434], [1748, -777, 1126, 1157]], 'gate_biases': [0, 0, 0, 0], 'short_weights': [[247, -582, -713, -1257], [1454, 81, 1163, -1622], [69, -234, 1634, -12], [383, -1670, 872, -969]]},
+            {'input_weights': [[109, 678, -347, -836], [35, 818, 160, 56], [2472, 299, 151, -1184], [1474, 857, 292, 883]], 'gate_biases': [0, 0, 0, 0], 'short_weights': [[434, 1395, -971, -234], [181, 563, 9, 1849], [179, 499, 27, 1168], [-1000, -160, -471, 89]]}]
     lSTM_Unit = LSTM_Unit(data[0], data[2], data[1], data[3], 4, [1, 4], [4, 4])
     print(lSTM_Unit.writeToFle())
 
