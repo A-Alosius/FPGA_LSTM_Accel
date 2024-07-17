@@ -24,34 +24,31 @@ class Gate(Component):
     def name(self)->str:
         return f'{self.gate}'
     
-    def values(self, input):
+    def values(self, input, label):
         output_string = ''
         if (type(input) == int):
             output_string += str(input)
         elif type(input) == list:
-            output_string = '('
             if type(input[0]) == int:
+                output_string += f'{label}(0) <= ('
                 for k, i in enumerate(input):
                     print(i)
                     output_string += str(i)
                     if k == len(input)-1:
                         break
                     output_string += ", "
-                output_string += ')'
+                output_string += ');'
 
             elif type(input[0]) == list:
                 for k, i in enumerate(input):
-                    output_string += '('
+                    print(k)
+                    output_string += f'{label}({k}) <= ('
                     for inner, j in enumerate(i):
                         output_string += str(j)
                         if inner == len(i)-1:
                             break
                         output_string += ", "
-                    output_string += ')'
-                    if k == len(input)-1:
-                        break
-                    output_string += ','
-                output_string += ')'
+                    output_string += ');\n'
         return output_string
 
     def getEntity(self) -> str:
@@ -67,9 +64,9 @@ class Gate(Component):
             );
 
             -- declare and instantiate weight and biases for each gate here
-            signal input_weights : weight_type := {self.values(self.input_weights)};
-            signal gate_biases  : output_type   := {self.values(self.gate_biases) if type(self.gate_biases[0]) == list else '(others => (others => 0))'};
-            signal short_weights : weight_type := {self.values(self.short_weights)};
+            signal input_weights : weight_type{':= ' + self.values(self.input_weights, '') if type(self.input_weights) == int else ''};
+            signal gate_biases   : output_type{':= ' + self.values(self.gate_biases, '') if type(self.gate_biases) == int else ''};
+            signal short_weights : weight_type{':= ' + self.values(self.short_weights, '') if type(self.short_weights) == int else ''};
         end entity {self.name};
         """
 
@@ -149,6 +146,7 @@ class Gate(Component):
         ------------------------------------------
 
         begin
+            {'-- initialise weights and biases if of array type\n'}
             {matmul.getInstance('clk', 'EN', 'input', 'input_weights', 'input_C', 'input_done')
               if (type(self.input_weights) == list) 
               else mul.getInstance('clk', 'EN', 'input', 'input_weights', 'input_c', 'input_done')}

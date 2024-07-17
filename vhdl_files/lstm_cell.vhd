@@ -306,7 +306,8 @@ end loop;
                 if short_scale_done = '1' then
                     for i in 0 to new_short'length-1 loop
 		for j in 0 to new_short(0)'length-1 loop
-	new_short(i)(j) <= tmp_new_short(i)(j)/1000;
+	new_short(i)(j) <= tmp_new_short(i)(j)/1000;	
+end loop;
 end loop;
                     new_long <= scaled_down_tmp;
                     done <= '1';

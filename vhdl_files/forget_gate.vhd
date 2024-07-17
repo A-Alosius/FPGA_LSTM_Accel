@@ -23,7 +23,7 @@ use work.config.all;
 
             -- declare and instantiate weight and biases for each gate here
             signal input_weights : weight_type := ((-1654, -486, -142, 1539),(1535, -2049, 253, -346),(1097, 892, -11, -9),(1181, 238, 1550, 935));
-            signal gate_biases  : output_type   := (0, 0, 0, 0);
+            signal gate_biases  : output_type   := (others => (others => 0));
             signal short_weights : weight_type := ((-2247, -230, -1326, -66),(1615, -423, -1022, -1351),(-33, 46, -600, 2063),(495, 1572, -528, 227));
         end entity forget_gate;
         
