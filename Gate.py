@@ -68,7 +68,7 @@ class Gate(Component):
 
             -- declare and instantiate weight and biases for each gate here
             signal input_weights : weight_type := {self.values(self.input_weights)};
-            signal gate_biases  : output_type   := {self.values(self.gate_biases)};
+            signal gate_biases  : output_type   := {self.values(self.gate_biases) if type(self.gate_biases[0]) == list else '(others => (others => 0))'};
             signal short_weights : weight_type := {self.values(self.short_weights)};
         end entity {self.name};
         """
@@ -345,7 +345,6 @@ class LSTM_Cell(Component):
 
         signal output_tmp             : output_type;
         signal tmp_active_done        : std_logic;
-        signal tmp_activate_done      : std_logic;
         signal short_scale_done       : std_logic;
 
         begin
@@ -400,7 +399,7 @@ class LSTM_Cell(Component):
 
         {"activate : for i in 0 to new_long_memory'length - 1 generate" if (type(self.input_data['input_weights']) == list) else ""}
             {tanh.getInstance('clk', 'scale_done', 'scaled_down_tmp', 'output_tmp', 'tmp_active_done') if type(self.input_data['input_weights']) != list else ""}
-            {activate_vect.getInstance('clk', 'scale_done', 'scaled_down_tmp(i)', 'output_tmp(i)', 'tmp_activate_done') if type(self.input_data['input_weights']) == list else ""}
+            {activate_vect.getInstance('clk', 'scale_done', 'scaled_down_tmp(i)', 'output_tmp(i)', 'tmp_active_done') if type(self.input_data['input_weights']) == list else ""}
         {"end generate activate;" if (type(self.input_data['input_weights']) == list) else ""}
 
         {elmul.getInstance('clk', 'tmp_active_done', 'output_tmp', 'output_gate_output', 'tmp_new_short', 'short_scale_done')
@@ -412,7 +411,7 @@ class LSTM_Cell(Component):
             if rising_edge(clk) then
                 if short_scale_done = '1' then
                     {'new_short <= tmp_new_short/1000;' if (type(self.input_data['input_weights']) != list)
-                     else "for i in 0 to new_short'length-1 loop\n\t\tfor j in 0 to new_short(0)'length-1 loop\n\tnew_short(i)(j) <= tmp_new_short(i)(j)/1000;\nend loop;"}
+                     else "for i in 0 to new_short'length-1 loop\n\t\tfor j in 0 to new_short(0)'length-1 loop\n\tnew_short(i)(j) <= tmp_new_short(i)(j)/1000;\t\nend loop;\nend loop;"}
                     new_long <= scaled_down_tmp;
                     done <= '1';
                 end if;
@@ -496,8 +495,8 @@ class LSTM_Unit(Component):
         signal unit2_done: std_logic;
         signal unit3_done: std_logic;
         
-        signal short : output_type := {'0' if arr != 1 else '(0, 0, 0, 0)'};
-        signal long  : output_type := {'0' if arr != 1 else '(0, 0, 0, 0)'}; -- consider making it input of lstm_unit or instantiate
+        signal short : output_type := {'0' if arr != 1 else '(others => (others => 0))'};
+        signal long  : output_type := {'0' if arr != 1 else '(others => (others => 0))'}; -- consider making it input of lstm_unit or instantiate
 
         signal short1: output_type;
         signal long1 : output_type;

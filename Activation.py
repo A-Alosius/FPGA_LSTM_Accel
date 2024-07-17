@@ -81,9 +81,9 @@ class Sigmoid(Activation):
 
         return f"""
         {VHDL_LIBRARIES}
-        package dtypes is
-            type int_array is array (0 to {len(sig)-1}) of integer;
-        end package;
+        -- package dtypes is
+            -- type int_array is array (0 to {len(sig)-1}) of integer;
+        -- end package;
 
         {VHDL_LIBRARIES}
         {VHDL_LIBRARY_DECLARATION}

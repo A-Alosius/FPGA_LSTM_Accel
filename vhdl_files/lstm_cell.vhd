@@ -164,7 +164,6 @@ use work.config.all;
 
         signal output_tmp             : output_type;
         signal tmp_active_done        : std_logic;
-        signal tmp_activate_done    : std_logic_vector(0 to long_tmp1'length-1);
         signal short_scale_done       : std_logic;
 
         begin
@@ -284,8 +283,8 @@ end loop;
             clk    => clk,
             EN     => scale_done,
             vector => scaled_down_tmp(i),
-            result => output(i),
-            done   => tmp_activate_done
+            result => output_tmp(i),
+            done   => tmp_active_done
         );
         
         end generate activate;
@@ -307,7 +306,7 @@ end loop;
                 if short_scale_done = '1' then
                     for i in 0 to new_short'length-1 loop
 		for j in 0 to new_short(0)'length-1 loop
-	new_short(i)(j) <= tmp_new_short(i)(j/1000;
+	new_short(i)(j) <= tmp_new_short(i)(j)/1000;
 end loop;
                     new_long <= scaled_down_tmp;
                     done <= '1';
