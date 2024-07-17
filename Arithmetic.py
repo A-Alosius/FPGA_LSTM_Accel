@@ -304,7 +304,7 @@ class MatrixMultiplier(Component):
                             in1 := mat1(i);
                             for j in 0 to mat2'length-1 loop
                                 in2 := mat2(j);
-                                tmp_out(i) := vect_mul(in1, in2);
+                                tmp_out(i)(j) := vect_mul(in1, in2);
                             end loop;
                         end loop;
                         mat12 <= tmp_out;
