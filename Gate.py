@@ -398,7 +398,7 @@ class LSTM_Cell(Component):
 
         {"activate : for i in 0 to new_long_memory'length - 1 generate" if (type(self.input_data['input_weights']) == list) else ""}
             {tanh.getInstance('clk', 'scale_done', 'scaled_down_tmp', 'output_tmp', 'tmp_active_done') if type(self.input_data['input_weights']) != list else ""}
-            {activate_vect.getInstance('clk', 'scale_done', 'scaled_down_tmp(i)', 'result(i)', 'tmp_activate_done') if type(self.input_data['input_weights']) == list else ""}
+            {activate_vect.getInstance('clk', 'scale_done', 'scaled_down_tmp(i)', 'output(i)', 'tmp_activate_done') if type(self.input_data['input_weights']) == list else ""}
         {"end generate activate;" if (type(self.input_data['input_weights']) == list) else ""}
 
         {elmul.getInstance('clk', 'tmp_active_done', 'output_tmp', 'output_gate_output', 'tmp_new_short', 'short_scale_done')
