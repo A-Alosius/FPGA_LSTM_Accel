@@ -499,6 +499,9 @@ class LSTM_Unit(Component):
         """
     
     def toVHDL(self) -> str:
+        if (self.input_shape[1] != self.weight_shape[0]):
+            print("Incompatible input and weight shapes")
+            return
         lstm_cell = LSTM_Cell(self.forget_data, self.input_data, self.candidate_data, self.output_data)
         conf = Configuration(self.input_shape, self.weight_shape, self.n_inputs)
         print(conf.writeToFle())
