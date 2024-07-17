@@ -19,7 +19,7 @@ use work.config.all;
                 mat12         : out output_type;
                 done          : out std_logic
             );
-            function vect_mul(signal vect1:output_row; signal vect2:output_row)
+            function vect_mul(vect1:output_row; vect2:output_row)
                 return output_row is
                 variable row: output_row;
                 begin
@@ -31,18 +31,17 @@ use work.config.all;
         end entity;
         
         architecture Behavioral of element_wise_multiplier is
-        signal in1 : output_row;
-        signal in2 : output_row;
         begin
             process (clk)
-            variable tmp : const_int;
+            variable in1 : output_row;
+            variable in2 : output_row;
             variable tmp_out : output_type;
             begin
                 if rising_edge(clk) then
                     if en = '1' then
                         for i in 0 to mat1'length-1 loop
-                            in1 <= mat1(i);
-                            in2 <= mat2(i);
+                            in1 := mat1(i);
+                            in2 := mat2(i);
                             tmp_out(i) := vect_mul(in1, in2);
                         end loop;
                         mat12 <= tmp_out;

@@ -40,7 +40,7 @@ use work.config.all;
             begin
 
                 if rising_edge(clk) then
-                    if EN = '1' then
+                    if EN = '1' and num > -100.0 and num < 6000 then
                         result <= sigm((100) + num/10); -- take note of precision if 0.1 leave as is if 0.01 divide by 1
                         done <= '1';
                     else

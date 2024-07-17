@@ -19,7 +19,7 @@ use work.config.all;
                 mat12         : out output_type;
                 done          : out std_logic
             );
-            function vect_mul(signal vect1:output_row; signal vect2:weight_row)
+            function vect_mul(vect1:output_row; vect2:weight_row)
                 return const_int is
                 variable sum: const_int := 0;
                 begin
@@ -31,18 +31,18 @@ use work.config.all;
         end entity;
         
         architecture Behavioral of matrix_multiplier is
-        signal in1 : output_row;
-        signal in2 : weight_row;
         begin
             process (clk)
+            variable in1 : output_row;
+            variable in2 : weight_row;
             variable tmp_out : output_type;
             begin
                 if rising_edge(clk) then
                     if en = '1' then
                         for i in 0 to mat1'length-1 loop
-                            in1 <= mat1(i);
+                            in1 := mat1(i);
                             for j in 0 to mat2'length-1 loop
-                                in2 <= mat2(j);
+                                in2 := mat2(j);
                                 tmp_out(i) := vect_mul(in1, in2);
                             end loop;
                         end loop;

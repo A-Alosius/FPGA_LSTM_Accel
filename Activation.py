@@ -98,7 +98,7 @@ class Sigmoid(Activation):
             begin
 
                 if rising_edge(clk) then
-                    if EN = '1' and num > {input_range/precision} and num < {(len(sig)-1)*10} then
+                    if EN = '1' and num > {int(input_range[0]/precision)} and num < {(len(sig)-1)*10} then
                         result <= sigm(({int((0-input_range[0])/precision)}) + num/{int(precision*10**dp)}); -- take note of precision if 0.1 leave as is if 0.01 divide by 1
                         done <= '1';
                     else
@@ -157,7 +157,7 @@ class Tanh(Activation):
             begin
 
                 if rising_edge(clk) then
-                    if EN = '1' and and num > {input_range/precision} and num < {(len(tanh)-1)*10} then
+                    if EN = '1' and num > {int(input_range[0]/precision)} and num < {(len(tanh)-1)*10} then
                         result <= tanh(({int((0-input_range[0])/precision)}) + num/{int(precision*10**dp)}); -- take note of precision if 0.1 leave as is if 0.01 divide by 1
                         done <= '1';
                     else

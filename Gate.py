@@ -101,13 +101,15 @@ class Gate(Component):
     
     def toVHDL(self) -> str:
         tanh.writeToFle()
-        mul.writeToFle()
-        add.writeToFle()
-        hadder.writeToFle()
         sig.writeToFle()
-        matmul.writeToFle()
-        act = Activate_Vector(self.activation)
-        act.writeToFle()
+        if (type(self.input_weights) != list):
+            mul.writeToFle()
+            add.writeToFle()
+        else:
+            hadder.writeToFle()
+            matmul.writeToFle()
+            act = Activate_Vector(self.activation)
+            act.writeToFle()
         
         """
         return complete VHDL definition of Gate
@@ -398,7 +400,7 @@ class LSTM_Cell(Component):
 
         {"activate : for i in 0 to new_long_memory'length - 1 generate" if (type(self.input_data['input_weights']) == list) else ""}
             {tanh.getInstance('clk', 'scale_done', 'scaled_down_tmp', 'output_tmp', 'tmp_active_done') if type(self.input_data['input_weights']) != list else ""}
-            {activate_vect.getInstance('clk', 'scale_done', 'scaled_down_tmp(i)', 'output(i)', 'tmp_activate_done') if type(self.input_data['input_weights']) == list else ""}
+            {activate_vect.getInstance('clk', 'scale_done', 'scaled_down_tmp(i)', 'output_tmp(i)', 'tmp_activate_done') if type(self.input_data['input_weights']) == list else ""}
         {"end generate activate;" if (type(self.input_data['input_weights']) == list) else ""}
 
         {elmul.getInstance('clk', 'tmp_active_done', 'output_tmp', 'output_gate_output', 'tmp_new_short', 'short_scale_done')
@@ -410,7 +412,7 @@ class LSTM_Cell(Component):
             if rising_edge(clk) then
                 if short_scale_done = '1' then
                     {'new_short <= tmp_new_short/1000;' if (type(self.input_data['input_weights']) != list)
-                     else "for i in 0 to new_short'length-1 loop\n\t\tfor j in 0 to new_short(0)'length-1 loop\n\tnew_short(i)(j) <= tmp_new_short(i)(j/1000;\nend loop;"}
+                     else "for i in 0 to new_short'length-1 loop\n\t\tfor j in 0 to new_short(0)'length-1 loop\n\tnew_short(i)(j) <= tmp_new_short(i)(j)/1000;\nend loop;"}
                     new_long <= scaled_down_tmp;
                     done <= '1';
                 end if;
@@ -530,10 +532,10 @@ if __name__ == "__main__":
     # print(inputGate.writeToFle())
     # print(candidateGate.writeToFle())
     # print(outputGate.writeToFle())
-    data = [{'input_weights': 1783, 'gate_biases': 1218921, 'short_weights': 851},
-{'input_weights': -91, 'gate_biases': 653856, 'short_weights': 2971},
-{'input_weights': 579, 'gate_biases': -176609, 'short_weights': 1093},
-{'input_weights': 56, 'gate_biases': 869757, 'short_weights': -1269}]
-    lSTM_Unit = LSTM_Unit(data[0], data[2], data[1], data[3], 4, [1, 1], [1, 1])
+    data = [{'input_weights': [[-1654, -486, -142, 1539], [1535, -2049, 253, -346], [1097, 892, -11, -9], [1181, 238, 1550, 935]], 'gate_biases': [0, 0, 0, 0], 'short_weights': [[-2247, -230, -1326, -66], [1615, -423, -1022, -1351], [-33, 46, -600, 2063], [495, 1572, -528, 227]]},
+{'input_weights': [[-545, 273, 1106, -1404], [1063, -1128, -1974, -207], [-311, -482, 1543, 627], [1075, 998, -202, 1171]], 'gate_biases': [0, 0, 0, 0], 'short_weights': [[-868, 1021, 77, -346], [-203, -109, -1647, -986], [1098, -1345, -318, -744], [1053, -313, -669, 988]]},
+{'input_weights': [[-766, 1392, -676, 116], [-433, 346, 1506, -2652], [181, 387, 544, 1434], [1748, -777, 1126, 1157]], 'gate_biases': [0, 0, 0, 0], 'short_weights': [[247, -582, -713, -1257], [1454, 81, 1163, -1622], [69, -234, 1634, -12], [383, -1670, 872, -969]]},
+{'input_weights': [[109, 678, -347, -836], [35, 818, 160, 56], [2472, 299, 151, -1184], [1474, 857, 292, 883]], 'gate_biases': [0, 0, 0, 0], 'short_weights': [[434, 1395, -971, -234], [181, 563, 9, 1849], [179, 499, 27, 1168], [-1000, -160, -471, 89]]}]
+    lSTM_Unit = LSTM_Unit(data[0], data[2], data[1], data[3], 4, [1, 4], [4, 4])
     print(lSTM_Unit.writeToFle())
 

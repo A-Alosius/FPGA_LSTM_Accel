@@ -42,8 +42,8 @@ use work.config.all;
         signal unit2_done: std_logic;
         signal unit3_done: std_logic;
         
-        signal short : output_type := 0;
-        signal long  : output_type := 0; -- consider making it input of lstm_unit or instantiate
+        signal short : output_type := (0, 0, 0, 0);
+        signal long  : output_type := (0, 0, 0, 0); -- consider making it input of lstm_unit or instantiate
 
         signal short1: output_type;
         signal long1 : output_type;

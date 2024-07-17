@@ -15,7 +15,7 @@ use work.config.all;
             port(
                 clk           : in std_logic;
                 EN            : in std_logic;
-                input_vector  : in output_type;
+                input         : in output_type;
                 bias          : in output_type;
                 sum           : out output_type;
                 done          : out std_logic
@@ -27,15 +27,15 @@ use work.config.all;
         begin
             process(clk)
                 variable tmp_sum : output_type;
-                variable tmp_arr : output_type;
+                variable mat1    : output_type;
+                variable mat2    : output_type;
                 begin
+                mat1 := input_vector;
+                mat2 := bias;
                     if rising_edge(clk) then
-                       -- if (en = '1') then
-                         --   tmp_arr := input_vector;
-                        --end if;
-                        for i in 0 to (input_vector'length-1) loop
-                            for j in 0 to input_vector(i)'length-1 loop
-                                tmp_sum(i)(j) := input_vector(i)(j) + bias(i)(j);
+                        for i in 0 to (mat1'length-1) loop
+                            for j in 0 to mat1(i)'length-1 loop
+                                tmp_sum(i)(j) := input(i)(j) + bias(i)(j);
                             end loop;
                         end loop;
                         sum <= tmp_sum;
