@@ -22,9 +22,9 @@ use work.config.all;
             );
 
             -- declare and instantiate weight and biases for each gate here
-            signal input_weights : weight_type := ((-545, 273, 1106, -1404),(1063, -1128, -1974, -207),(-311, -482, 1543, 627),(1075, 998, -202, 1171));
-            signal gate_biases  : output_type   := (others => (others => 0));
-            signal short_weights : weight_type := ((-868, 1021, 77, -346),(-203, -109, -1647, -986),(1098, -1345, -318, -744),(1053, -313, -669, 988));
+            signal input_weights : weight_type;
+            signal gate_biases   : output_type;
+            signal short_weights : weight_type;
         end entity candidate_gate;
         
 
@@ -99,6 +99,20 @@ use work.config.all;
         ------------------------------------------
 
         begin
+            -- initialise weights and biases if of array type
+
+            input_weights(0) <= (-545, 273, 1106, -1404);
+			input_weights(1) <= (1063, -1128, -1974, -207);
+			input_weights(2) <= (-311, -482, 1543, 627);
+			input_weights(3) <= (1075, 998, -202, 1171);
+			
+            short_weights(0) <= (-868, 1021, 77, -346);
+			short_weights(1) <= (-203, -109, -1647, -986);
+			short_weights(2) <= (1098, -1345, -318, -744);
+			short_weights(3) <= (1053, -313, -669, 988);
+			
+            gate_biases(0) <= (0, 0, 0, 0);
+            
             
         matrix_multiplier_inst_4: matrix_multiplier port map(
             clk   => clk,

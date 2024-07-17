@@ -32,7 +32,6 @@ class Gate(Component):
             if type(input[0]) == int:
                 output_string += f'{label}(0) <= ('
                 for k, i in enumerate(input):
-                    print(i)
                     output_string += str(i)
                     if k == len(input)-1:
                         break
@@ -41,14 +40,13 @@ class Gate(Component):
 
             elif type(input[0]) == list:
                 for k, i in enumerate(input):
-                    print(k)
                     output_string += f'{label}({k}) <= ('
                     for inner, j in enumerate(i):
                         output_string += str(j)
                         if inner == len(i)-1:
                             break
                         output_string += ", "
-                    output_string += ');\n'
+                    output_string += ');\n\t\t\t'
         return output_string
 
     def getEntity(self) -> str:
@@ -146,7 +144,11 @@ class Gate(Component):
         ------------------------------------------
 
         begin
-            {'-- initialise weights and biases if of array type\n'}
+            -- initialise weights and biases if of array type\n
+            {self.values(self.input_weights, 'input_weights')}
+            {self.values(self.short_weights, 'short_weights')}
+            {self.values(self.gate_biases, 'gate_biases')}
+            
             {matmul.getInstance('clk', 'EN', 'input', 'input_weights', 'input_C', 'input_done')
               if (type(self.input_weights) == list) 
               else mul.getInstance('clk', 'EN', 'input', 'input_weights', 'input_c', 'input_done')}
@@ -389,7 +391,7 @@ class LSTM_Cell(Component):
             if rising_edge(clk) then
                 if long_update_done = '1' then
                     {'scaled_down_tmp <= new_long_memory/1000;' if (type(self.input_data['input_weights']) != list) else 
-                     "for i in 0 to new_long_memory'length-1 loop\n\tfor j in 0 to new_long_memory(i)'length-1 loop\n\tscaled_down_tmp(i)(j) <= new_long_memory(i)(j)/1000;\n\tend loop;\nend loop;"}
+                     "for i in 0 to new_long_memory'length-1 loop\n\t\t\t\t\t\tfor j in 0 to new_long_memory(i)'length-1 loop\n\t\t\t\t\t\t\tscaled_down_tmp(i)(j) <= new_long_memory(i)(j)/1000;\n\t\t\t\t\t\tend loop;\n\t\t\t\t\tend loop;"}
                     scale_done <= '1';
                 end if;
             end if;
@@ -409,7 +411,7 @@ class LSTM_Cell(Component):
             if rising_edge(clk) then
                 if short_scale_done = '1' then
                     {'new_short <= tmp_new_short/1000;' if (type(self.input_data['input_weights']) != list)
-                     else "for i in 0 to new_short'length-1 loop\n\t\tfor j in 0 to new_short(0)'length-1 loop\n\tnew_short(i)(j) <= tmp_new_short(i)(j)/1000;\t\nend loop;\nend loop;"}
+                     else "for i in 0 to new_short'length-1 loop\n\t\t\t\t\t\tfor j in 0 to new_short(0)'length-1 loop\n\t\t\t\t\t\t\tnew_short(i)(j) <= tmp_new_short(i)(j)/1000;\n\t\t\t\t\t\tend loop;\n\t\t\t\t\tend loop;"}
                     new_long <= scaled_down_tmp;
                     done <= '1';
                 end if;
@@ -434,6 +436,31 @@ class LSTM_Unit(Component):
     def name(self)->str:
         return f'lstm_unit_{self.count}'
     
+    def values(self, input, label):
+        output_string = ''
+        if (type(input) == int):
+            output_string += str(input)
+        elif type(input) == list:
+            if type(input[0]) == int:
+                output_string += f'{label}(0) <= ('
+                for k, i in enumerate(input):
+                    output_string += str(i)
+                    if k == len(input)-1:
+                        break
+                    output_string += ", "
+                output_string += ');'
+
+            elif type(input[0]) == list:
+                for k, i in enumerate(input):
+                    output_string += f'{label}({k}) <= ('
+                    for inner, j in enumerate(i):
+                        output_string += str(j)
+                        if inner == len(i)-1:
+                            break
+                        output_string += ", "
+                    output_string += ');\n\t\t\t'
+        return output_string
+                 
     def getEntity(self) -> str:
         return f"""
         entity {self.name} is
