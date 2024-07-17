@@ -140,7 +140,7 @@ class HigherBiasAdder(Component):
                 variable mat1    : output_type;
                 variable mat2    : output_type;
                 begin
-                mat1 := input_vector;
+                mat1 := input;
                 mat2 := bias;
                     if rising_edge(clk) then
                         for i in 0 to (mat1'length-1) loop
