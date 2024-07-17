@@ -345,7 +345,7 @@ class LSTM_Cell(Component):
 
         signal output_tmp             : output_type;
         signal tmp_active_done        : std_logic;
-        {"signal tmp_activate_done    : std_logic_vector(0 to long_tmp1'length-1);" if (type(self.input_data['input_weights']) == list) else ""}
+        signal tmp_activate_done      : std_logic;
         signal short_scale_done       : std_logic;
 
         begin
