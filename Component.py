@@ -1,3 +1,5 @@
+# This class is adapted from Akotey Ian's ANN FPGA Acceleration : https://github.com/ianakotey/FPGA_Accelerator/blob/master/Generator/
+
 from Constants import VHDL_LIBRARIES, VHDL_LIBRARY_DECLARATION
 import os
 

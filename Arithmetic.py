@@ -1,6 +1,7 @@
 from Constants import VHDL_LIBRARIES, VHDL_LIBRARY_DECLARATION
 from Component import Component
 
+# The adder and multiply classes are adapted from Akotey Ian's ANN FPGA Acceleration : https://github.com/ianakotey/FPGA_Accelerator/blob/master/Generator/
 
 class Adder(Component):
     count = 0

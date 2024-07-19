@@ -105,6 +105,7 @@ class Gate(Component):
             matmul.writeToFle()
             act = Activate_Vector(self.activation)
             act.writeToFle()
+            elmul.writeToFle()
         
         """
         return complete VHDL definition of Gate
@@ -145,9 +146,9 @@ class Gate(Component):
 
         begin
             -- initialise weights and biases if of array type\n
-            {self.values(self.input_weights, 'input_weights')}
-            {self.values(self.short_weights, 'short_weights')}
-            {self.values(self.gate_biases, 'gate_biases')}
+            {self.values(self.input_weights, 'input_weights') if type(self.input_weights)==list else ''}
+            {self.values(self.short_weights, 'short_weights') if type(self.short_weights)==list else ''}
+            {self.values(self.gate_biases, 'gate_biases') if type(self.gate_biases)==list else ''}
             
             {matmul.getInstance('clk', 'EN', 'input', 'input_weights', 'input_C', 'input_done')
               if (type(self.input_weights) == list) 
@@ -289,11 +290,10 @@ class LSTM_Cell(Component):
         outputGate = Gate('output_gate', self.output_data["input_weights"], self.output_data["gate_biases"], self.output_data["short_weights"], 'sig')
         activate_vect = Activate_Vector('tanh')
 
-        print(forgetGate.writeToFle())
-        print(inputGate.writeToFle())
-        print(candidateGate.writeToFle())
-        print(outputGate.writeToFle())
-        print(elmul.writeToFle())
+        (forgetGate.writeToFle())
+        (inputGate.writeToFle())
+        (candidateGate.writeToFle())
+        (outputGate.writeToFle())
         """
         return complete VHDL definition of Gate
         """
@@ -311,8 +311,8 @@ class LSTM_Cell(Component):
         {matmul.getComponent() if (type(self.input_data['input_weights']) == list) else mul.getComponent()}
         {hadder.getComponent() if (type(self.input_data['gate_biases']) == list) else add.getComponent()}
         {tanh.getComponent()}
-        {elmul.getComponent() if type(self.input_data['input_weights']) else ""}
-        {activate_vect.getComponent() if type(self.input_data['input_weights']) else ""}
+        {elmul.getComponent() if type(self.input_data['input_weights']) == list else ''}
+        {activate_vect.getComponent() if type(self.input_data['input_weights']) == list else ''}
 
         signal forget_gate_output     : output_type; -- long_remember percent
         signal forget_gate_done       : std_logic;
@@ -504,8 +504,8 @@ class LSTM_Unit(Component):
             return
         lstm_cell = LSTM_Cell(self.forget_data, self.input_data, self.candidate_data, self.output_data)
         conf = Configuration(self.input_shape, self.weight_shape, self.n_inputs)
-        print(conf.writeToFle())
-        print(lstm_cell.writeToFle())
+        conf.writeToFle()
+        lstm_cell.writeToFle()
         arr = 0 if self.input_shape[0] == 1 and self.input_shape[1] == 1 else 1
         """
         return complete VHDL definition of Gate
@@ -539,10 +539,11 @@ class LSTM_Unit(Component):
 
 
 if __name__ == "__main__":
-    data = [{'input_weights': [[-1654, -486, -142, 1539], [1535, -2049, 253, -346], [1097, 892, -11, -9], [1181, 238, 1550, 935]], 'gate_biases': [0, 0, 0, 0], 'short_weights': [[-2247, -230, -1326, -66], [1615, -423, -1022, -1351], [-33, 46, -600, 2063], [495, 1572, -528, 227]]},
-            {'input_weights': [[-545, 273, 1106, -1404], [1063, -1128, -1974, -207], [-311, -482, 1543, 627], [1075, 998, -202, 1171]], 'gate_biases': [0, 0, 0, 0], 'short_weights': [[-868, 1021, 77, -346], [-203, -109, -1647, -986], [1098, -1345, -318, -744], [1053, -313, -669, 988]]},
-            {'input_weights': [[-766, 1392, -676, 116], [-433, 346, 1506, -2652], [181, 387, 544, 1434], [1748, -777, 1126, 1157]], 'gate_biases': [0, 0, 0, 0], 'short_weights': [[247, -582, -713, -1257], [1454, 81, 1163, -1622], [69, -234, 1634, -12], [383, -1670, 872, -969]]},
-            {'input_weights': [[109, 678, -347, -836], [35, 818, 160, 56], [2472, 299, 151, -1184], [1474, 857, 292, 883]], 'gate_biases': [0, 0, 0, 0], 'short_weights': [[434, 1395, -971, -234], [181, 563, 9, 1849], [179, 499, 27, 1168], [-1000, -160, -471, 89]]}]
-    lSTM_Unit = LSTM_Unit(data[0], data[2], data[1], data[3], 4, [1, 4], [4, 4])
+    data = [
+{'input_weights': 1048, 'gate_biases': 993998, 'short_weights': 667},
+{'input_weights': -1187, 'gate_biases': 489871, 'short_weights': 777},
+{'input_weights': 869, 'gate_biases': -256319, 'short_weights': 1194},
+{'input_weights': 1297, 'gate_biases': 548073, 'short_weights': 235}]
+    lSTM_Unit = LSTM_Unit(data[0], data[2], data[1], data[3], 4, [1, 1], [1, 1])
     print(lSTM_Unit.writeToFle())
 

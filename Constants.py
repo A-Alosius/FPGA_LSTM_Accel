@@ -1,3 +1,4 @@
+# This code is adapted from Akotey Ian's FPGA Acceleration Generator : https://github.com/ianakotey/FPGA_Accelerator/blob/master/Generator/
 """
 Configuration Module for the application
 """
