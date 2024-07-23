@@ -492,8 +492,8 @@ class LSTM_Unit(Component):
         {self.name}_inst: {self.name} port map(
             clk   => {clk},
             EN    => {EN},
-            inputs=> {inputs}
-            output=> {output}
+            inputs=> {inputs},
+            output=> {output},
             done  => {done}
         );
         """

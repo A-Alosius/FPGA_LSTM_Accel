@@ -17,7 +17,7 @@ class Num2Bin(Component):
                 clk    : in std_logic;
                 en     : in std_logic;
                 number : in const_int;
-                bits   : out std_logic_vector({self.nbits} downto 0);
+                bits   : out std_logic_vector({self.nbits-1} downto 0);
                 done   : out std_logic
             );
         end {self.name};
@@ -30,7 +30,7 @@ class Num2Bin(Component):
                 clk    : in std_logic;
                 en     : in std_logic;
                 number : in const_int;
-                bits   : out std_logic_vector({self.nbits} downto 0);
+                bits   : out std_logic_vector({self.nbits-1} downto 0);
                 done   : out std_logic
             );
         end component;
@@ -56,7 +56,7 @@ class Num2Bin(Component):
         architecture Behavioral of {self.name} is
         begin
             process(clk)
-                variable tmp_bits : std_logic_vector({self.nbits} downto 0);
+                variable tmp_bits : std_logic_vector({self.nbits-1} downto 0);
                 variable num : const_int := number;
             begin
       	 
@@ -99,7 +99,7 @@ class Bin2Num(Component):
             port (
                 clk    : in std_logic;
                 en     : in std_logic;
-                bits   : in std_logic_vector({self.nbits} downto 0);
+                bits   : in std_logic_vector({self.nbits-1} downto 0);
                 number : out const_int;
                 done   : out std_logic
             );
@@ -112,7 +112,7 @@ class Bin2Num(Component):
             port (
                 clk    : in std_logic;
                 en     : in std_logic;
-                bits   : in std_logic_vector({self.nbits} downto 0);
+                bits   : in std_logic_vector({self.nbits-1} downto 0);
                 number : out const_int;
                 done   : out std_logic
             );
