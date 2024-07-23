@@ -54,7 +54,7 @@ use work.config.all;
                         if en = '1' and all_in = '0' and num > -2147483648 then
                             output(index) <= num;
                             index <= index + 1;
-                            if index = 3 then
+                            if index = output'length-1 then
                                 done <= '1';
                                 all_in <= '1';
                             else

@@ -16,8 +16,8 @@ use work.config.all;
                 en     : in std_logic;
                 rst    : in std_logic;
                 ctrl   : in std_logic_vector(1 downto 0);
-                inbits : in std_logic_vector(9 to 0);
-                outbits: out std_logic_vector(9 to 0)
+                inbits : in std_logic_vector(9 downto 0);
+                outbits: out std_logic_vector(9 downto 0)
                 );
         end communication_module;
         
@@ -90,7 +90,7 @@ use work.config.all;
                 else
                     if rising_edge(clk) then
                         if en = '1' then
-                            case ctrl_sig is
+                            case ctrl is
                                 -- idle: just maintain signals
                                 when "00" => 
                                     null;
