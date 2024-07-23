@@ -131,6 +131,14 @@ class Bin2Num(Component):
         );
         """
     
+    def computation(self):
+        compute_string = ''
+        for i in range(self.nbits):
+            if i == self.nbits-1:
+                compute_string += f'(ints({self.nbits-i-1})*{2**i})'
+                return compute_string
+            compute_string += f'(ints({self.nbits-i-1})*{2**i}) + '
+    
     def toVHDL(self) -> str:
         return f"""
         {VHDL_LIBRARIES}
@@ -156,7 +164,7 @@ class Bin2Num(Component):
                         end loop;
                         
                         -- use loop to generatae this as one operation note the descending order of indexes
-                        num := (ints(9)*1) + (ints(8)*2) + (ints(7)*4) + (ints(6)*8) + (ints(5)*16) + (ints(4)*32) + (ints(3)*64) + (ints(2)*128) + (ints(1)*256) + (ints(0)*512);
+                        num := {self.computation()};
                         number <= num;
                         done <= '1';
                     else
