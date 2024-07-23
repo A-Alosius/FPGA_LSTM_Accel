@@ -1,0 +1,2 @@
+while using a separate clock (mcu_clk)for the input signal, there is a need to keep the ctrl signal at the right value until all inputs are in
+also consider time it takes for signals to settle e.g for ctrl signal and enables to actually take effect
