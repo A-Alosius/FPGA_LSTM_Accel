@@ -1,8 +1,7 @@
 from Constants import VHDL_LIBRARIES, VHDL_LIBRARY_DECLARATION
 from Component import Component
 from Gate import LSTM_Unit
-from Num2Bin import Num2Bin
-import math
+from Num2Bin import Num2Bin, Bin2Num
 
 class Communication(Component):
     """Middle interface between FPGA and MCU
@@ -87,3 +86,84 @@ class Communication(Component):
         end behavioral;
         """
     
+class Input_Picker(Component):
+    """Stores inputs from MCU until they are all ready to be passed to model"""
+
+    def __init__(self, nbits):
+        self.nbits = nbits
+
+    @property
+    def name(self):
+        return 'input_picker'
+    
+    def getEntity(self):
+        return f"""
+        entity {self.name} is
+            port (
+                clk    : in std_logic;
+                en     : in std_logic;
+                inbits : in std_logic_vector({self.nbits} downto 0);
+                output : out input_array;
+                done   : out std_logic
+            );
+        end {self.name};
+        """
+    
+    def getComponent(self):
+        return f"""
+        component {self.name} is
+            port (
+                clk    : in std_logic;
+                en     : in std_logic;
+                inbits : in std_logic_vector({self.nbits} downto 0);
+                output : out input_array;
+                done   : out std_logic
+            );
+        end component;
+        """
+    
+    def getInstance(self, clk, EN, inbits, output, done):
+        self.count += 1
+        return f"""
+        {self.name}_inst_{self.count-1}: {self.name} port map(
+            clk    => {clk},
+            EN     => {EN},
+            inbits => {inbits},
+            output => {output},
+            done   => {done}
+        );
+        """
+    
+    def toVHDL(self):
+        bin2num = Bin2Num(self.nbits)
+        return f"""
+        {VHDL_LIBRARIES}
+        {VHDL_LIBRARY_DECLARATION}
+        {self.getEntity()}
+
+        architecture Behavioral of {self.name} is
+        {bin2num.getComponent()}
+            signal index : integer := 0;
+            signal all_in : std_logic := '0';
+            signal num : integer;
+            signal bin2num_done : std_logic;
+
+            begin
+                {bin2num.getInstance('clk', 'en', 'num', 'inbits', 'bin2num_done')}
+                process(clk)
+                begin
+                    if rising_edge(clk) then
+                        if en = '1' and all_in = '0' and num > -2147483648 then
+                            output(index) <= num;
+                            index <= index + 1;
+                            if index = 3 then
+                                done <= '1';
+                                all_in <= '1';
+                            else
+                                done <= '0';
+                            end if;
+                        end if;
+                    end if;
+                end process;
+        end behavioral;
+        """

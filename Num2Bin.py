@@ -51,7 +51,6 @@ class Num2Bin(Component):
         return f"""
         {VHDL_LIBRARIES}
         {VHDL_LIBRARY_DECLARATION}
-        use work.dtypes.all;
         {self.getEntity()}
 
         architecture Behavioral of {self.name} is
@@ -143,7 +142,6 @@ class Bin2Num(Component):
         return f"""
         {VHDL_LIBRARIES}
         {VHDL_LIBRARY_DECLARATION}
-        use work.dtypes.all;
         {self.getEntity()}
 
         architecture Behavioral of {self.name} is
