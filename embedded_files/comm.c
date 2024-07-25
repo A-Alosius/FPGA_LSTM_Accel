@@ -74,7 +74,7 @@ void send_inputs(){
     read_input();
     num2bin();
     for (int i = 0; i < NBITs; i++){
-        if (output_bits[i] == 0)
+        if (output_bits[i])
             PTC->PSOR |= MASK(ins[i]);
         else
             PTC->PCOR |= MASK(ins[i]);
@@ -89,6 +89,7 @@ void read_inference(){
     bin2num();
 }
 
+// convert input to bin and store in input_bits array
 void num2bin(){
 	for (int i=0; i<NBITS; i++){
 		input_bits[NBITS-1-i] = input % 2;
@@ -97,6 +98,7 @@ void num2bin(){
 	}
 }
 
+// convert bit results from FPGA to num and store in output variable
 void bin2num(){
 	output = 0;
     for (int i=0; i<NBITS; i++){
@@ -104,6 +106,7 @@ void bin2num(){
 	}
     printf("%d", output);
 }
+
 
 int main(){
 
