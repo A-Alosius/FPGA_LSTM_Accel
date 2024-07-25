@@ -1,9 +1,14 @@
 #include "MKL25Z4.h"
 #include "board.h"
 #include <math.h>
+#include <stdlib.h>
 
-#define ctrl1 (1)  // PTE1 
+// special signals
+#define ctrl1 (1)  // PTE1 note...may need a input control and output control to relay ctrl signal to FPGA
 #define ctrl0 (0)  // PTE0
+#define clk   (9)  // PTC9
+#define sign (16)  // PTC16
+#define rst  (17)  // PTC17
 
 // input pins
 #define in0 (7)    // PTC7
@@ -17,8 +22,6 @@
 #define in8 (12)   // PTC12 
 #define in9 (13)   // PTC13
 
-#define sign (16)  // PTC16
-
 // output pins
 #define out0 (30)  // PTE30
 #define out1 (29)  // PTE29 
@@ -31,26 +34,30 @@
 #define out8 (3)   // PTE3 
 #define out9 (2)   // PTE2
 
+// reusables
 #define MASK(X) (1UL<<X)
 #define NBITS (10)
 
 // global variables
-int input;
-int output[NBITS];
+int input, output;
+int output_bits[NBITS], input_bits[NBITS];
+uint8_t ins [] = {in9, in8, in7, in6, in5, in4, in3, in2, in1, in0};
+uint8_t outs[] = {out9, out8, out7, out6, out5, out4, out3, out2, out1, out0};
 
 // function prototypes
 void config();
 int* num2bin(int);
-int bin2num(int*);
+int  bin2num(int*);
+void read_input();
 void send_inputs(int);
 void read_inference();
 
-// function definitions
-void config(){
-    SIM->SCGC5|= MASK(11) | MASK(13); // clock gating for C and E...confirm from manual
-    uint8_t ins [] = [in9, in8, in7, in6, in5, in4, in3, in2, in1, in0];
-    uint8_t outs[] = [out9, out8, out7, out6, out5, out4, out3, out2, out1, out0];
+/********************  function definitions ******************/
 
+// configure io pins
+void io_config(){
+    SIM->SCGC5|= MASK(11) | MASK(13); // clock gating for C and E...confirm from manual
+    
     for (int i = 0; i < 10; i++){
         PORTC->PCR[ins[i]] &= ~0x700; //Clear mux
         PORTC->PCR[ins[i]] |= MASK(8); //setup to be GPIO
@@ -62,30 +69,40 @@ void config(){
     }
 }
 
+// read inputs, convert to bin and set appropriate states for pins
 void send_inputs(){
-    int
+    read_input();
+    num2bin();
+    for (int i = 0; i < NBITs; i++){
+        if (output_bits[i] == 0)
+            PTC->PSOR |= MASK(ins[i]);
+        else
+            PTC->PCOR |= MASK(ins[i]);
+    }
 }
 
+// read result pins for prediction
 void read_inference(){
-
+    for (int i = 0; i < NBITs; i++){
+        output_bits[i] = (PTE->PDIR & MASK(outs[i])) ? 1:0;
+    }
+    bin2num();
 }
 
-int* num2bin(int num, int nbits){
-	int* bits = (int*) malloc(sizeof(int) * nbits);
-	for (int i=0; i<nbits; i++){
-		bits[nbits-1-i] = num%2;
-		num /= 2;
-		printf("%d", bits[nbits-1-i]);
+void num2bin(){
+	for (int i=0; i<NBITS; i++){
+		input_bits[NBITS-1-i] = input % 2;
+		input = (inputs >> 1);
+		printf("%d", input_bits[NBITS-1-i]);
 	}
 }
 
-int bin2num(int *bits, int nbits){
-	int out = 0;
-    for (int i=0; i<nbits; i++){
-		out += bits[i]*pow(2, nbits-1-i);
-		printf("%d", out);
+void bin2num(){
+	output = 0;
+    for (int i=0; i<NBITS; i++){
+		output += output_bits[i]*pow(2, nbits-1-i);
 	}
-    return out;
+    printf("%d", output);
 }
 
 int main(){
