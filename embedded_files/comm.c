@@ -32,6 +32,18 @@
 
 #define MASK(X) (1UL<<X)
 
+// global variables
+int input, nbits;
+int* output;
+
+// function prototypes
+void config();
+int* num2bin(int);
+int bin2num(int*);
+void send_inputs(int);
+void read_inference();
+
+// function definitions
 void config(){
     SIM->SCGC5|= MASK(11) | MASK(13); // clock gating for C and E...confirm from manual
     uint8_t ins [] = [in9, in8, in7, in6, in5, in4, in3, in2, in1, in0];
@@ -40,10 +52,44 @@ void config(){
     for (int i = 0; i < 10; i++){
         PORTC->PCR[ins[i]] &= ~0x700; //Clear mux
         PORTC->PCR[ins[i]] |= MASK(8); //setup to be GPIO
-        PTC->PDDR |= MASK(ins[i]); // set as input
+        PTC->PDDR &= ~MASK(ins[i]); // set as input
 
-        PORTE->PCR[outs[i]] &= ~0x700;
-        PORTE->PCR[outs[i]] |= MASK(8);
-        PTE->PDDR &= ~MASK(ins[i]);
+        PORTE->PCR[outs[i]] &= ~0x700; // clear mux
+        PORTE->PCR[outs[i]] |= MASK(8); // setp as GPIO
+        PTE->PDDR |= MASK(ins[i]); // set as output
     }
+}
+
+void send_inputs(int num){
+    int
+}
+
+void read_inference(){
+
+}
+
+int* num2bin(int num, int nbits){
+	int* bits = (int*) malloc(sizeof(int) * nbits);
+	for (int i=0; i<nbits; i++){
+		bits[nbits-1-i] = num%2;
+		num /= 2;
+		printf("%d", bits[nbits-1-i]);
+	}
+}
+
+int bin2num(int *bits, int nbits){
+	for (int i=0; i<nbits; i++){
+		bits[nbits-1-i] = num%2;
+		num /= 2;
+		printf("%d", bits[nbits-1-i]);
+	}
+}
+
+int main(){
+    nbits = 10;
+    output = (int*) malloc(sizeof(int) * nbits);
+    while(1){
+
+    }
+    return 0;
 }
