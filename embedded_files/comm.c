@@ -1,5 +1,6 @@
 #include "MKL25Z4.h"
 #include "board.h"
+#include <math.h>
 
 #define ctrl1 (1)  // PTE1 
 #define ctrl0 (0)  // PTE0
@@ -31,10 +32,11 @@
 #define out9 (2)   // PTE2
 
 #define MASK(X) (1UL<<X)
+#define NBITS (10)
 
 // global variables
-int input, nbits;
-int* output;
+int input;
+int output[NBITS];
 
 // function prototypes
 void config();
@@ -60,7 +62,7 @@ void config(){
     }
 }
 
-void send_inputs(int num){
+void send_inputs(){
     int
 }
 
@@ -78,16 +80,16 @@ int* num2bin(int num, int nbits){
 }
 
 int bin2num(int *bits, int nbits){
-	for (int i=0; i<nbits; i++){
-		bits[nbits-1-i] = num%2;
-		num /= 2;
-		printf("%d", bits[nbits-1-i]);
+	int out = 0;
+    for (int i=0; i<nbits; i++){
+		out += bits[i]*pow(2, nbits-1-i);
+		printf("%d", out);
 	}
+    return out;
 }
 
 int main(){
-    nbits = 10;
-    output = (int*) malloc(sizeof(int) * nbits);
+
     while(1){
 
     }
