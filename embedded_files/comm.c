@@ -2,6 +2,7 @@
 #include "board.h"
 #include <math.h>
 #include <stdlib.h>
+#include "keypad.c"
 
 // special signals
 #define ctrl1 (1)  // PTE1 note...may need a input control and output control to relay ctrl signal to FPGA
@@ -17,10 +18,10 @@
 #define in3 (4)    // PTC4 
 #define in4 (5)    // PTC5
 #define in5 (6)    // PTC6
-#define in6 (10)   // PTC10 
-#define in7 (11)   // PTC11
-#define in8 (12)   // PTC12 
-#define in9 (13)   // PTC13
+#define in6 (8)    // PTC8 
+#define in7 (9)    // PTC9
+#define in8 (2)    // PTC2
+#define in9 (1)    // PTC1
 
 // output pins
 #define out0 (30)  // PTE30
@@ -61,11 +62,11 @@ void io_config(){
     for (int i = 0; i < 10; i++){
         PORTC->PCR[ins[i]] &= ~0x700; //Clear mux
         PORTC->PCR[ins[i]] |= MASK(8); //setup to be GPIO
-        PTC->PDDR &= ~MASK(ins[i]); // set as input
+        PTC->PDDR |= MASK(ins[i]); // set as output to send inputs to FPGA
 
         PORTE->PCR[outs[i]] &= ~0x700; // clear mux
         PORTE->PCR[outs[i]] |= MASK(8); // setp as GPIO
-        PTE->PDDR |= MASK(ins[i]); // set as output
+        PTE->PDDR &= ~MASK(outs[i]); // set as input to receive inference from FPGA
     }
 }
 

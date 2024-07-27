@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "MKL25Z4.h"
+#pragma once
 
 // keypad input
 #define R1 (17) // PTA17
@@ -9,8 +10,8 @@
 //keypad output
 #define C1 (13) // PTC13
 #define C2 (12) // PTC12
-#define C3 (6) // PTC6
-#define C4 (5) // PTC5
+#define C3 (11) // PTC11
+#define C4 (10) // PTC10
 
 //Other useful functions:
 void read_input(void);
@@ -19,7 +20,32 @@ void keypad_config(void);
 
 uint8_t col1, col2, col3, col4;
 
-void read_input(){
+void keypad_config(){
+	// configure cols as output
+	for (int i = 0; i < 4; i++){
+		PORTC->PCR[10+i] &= ~0x700; //Clear mux
+        PORTC->PCR[10+i] |= MASK(8); //setup to be GPIO
+        PTC->PDDR |= MASK(10+i); // set as input
+	}
+	
+	PORTC->PCR[R4] &= ~0x700; //Clear mux
+    PORTC->PCR[R4] |= MASK(8); //setup to be GPIO
+    PTC->PDDR &= ~MASK(R4); // set as input
+
+	PORTC->PCR[R3] &= ~0x700; //Clear mux
+    PORTC->PCR[R3] |= MASK(8); //setup to be GPIO
+    PTC->PDDR &= ~MASK(R3); // set as input
+
+	PORTA->PCR[R2] &= ~0x700; //Clear mux
+    PORTA->PCR[R2] |= MASK(8); //setup to be GPIO
+    PTA->PDDR &= ~MASK(R2); // set as input
+
+	PORTA->PCR[R1] &= ~0x700; //Clear mux
+    PORTA->PCR[R1] |= MASK(8); //setup to be GPIO
+    PTA->PDDR &= ~MASK(R1); // set as input
+}
+
+void read_row(){
 	if (!PTA->PDIR & MASK(R1) && col1){
 		key = 1;
 	}
@@ -72,7 +98,7 @@ void read_input(){
 }
 
 // flaw with this approach is that you'll wait for whole main to run before checking again which could be slow for larger programs. Alternative will be timer
-void loop_rows(){
+void loop_cols(){
 	static enum states {s1, s2, s3, s4};
 	static states state = s1;
 	
