@@ -5,11 +5,11 @@
 #include "keypad.c"
 
 // special signals
-#define ctrl1 (1)  // PTE1 note...may need a input control and output control to relay ctrl signal to FPGA
-#define ctrl0 (0)  // PTE0
-#define clk   (9)  // PTC9
-#define sign (16)  // PTC16
-#define rst  (17)  // PTC17
+#define ctrl1 (1)  // PTB1 note...may need a input control and output control to relay ctrl signal to FPGA
+#define ctrl0 (0)  // PTB0
+#define clk   (8)  // PTB9
+#define sign  (9)  // PTB9
+#define rst   (10) // PTB10
 
 // input pins
 #define in0 (7)    // PTC7
@@ -57,8 +57,9 @@ void read_inference();
 
 // configure io pins
 void io_config(){
-    SIM->SCGC5|= MASK(11) | MASK(13); // clock gating for C and E...confirm from manual
+    SIM->SCGC5|= MASK(9) | MASK(10) | MASK(11) | MASK(13); // clock gating for C and E...confirm from manual
     
+    // input and output pins
     for (int i = 0; i < 10; i++){
         PORTC->PCR[ins[i]] &= ~0x700; //Clear mux
         PORTC->PCR[ins[i]] |= MASK(8); //setup to be GPIO
@@ -68,6 +69,17 @@ void io_config(){
         PORTE->PCR[outs[i]] |= MASK(8); // setp as GPIO
         PTE->PDDR &= ~MASK(outs[i]); // set as input to receive inference from FPGA
     }
+    PORTC->PCR[ins[i]] &= ~0x700; //Clear mux
+    PORTC->PCR[ins[i]] |= MASK(8); //setup to be GPIO
+    PTC->PDDR |= MASK(ins[i]);
+    // comms pins
+
+}
+
+
+// read keypad input
+void read_input(){
+    input = key;
 }
 
 // read inputs, convert to bin and set appropriate states for pins
@@ -94,7 +106,7 @@ void read_inference(){
 void num2bin(){
 	for (int i=0; i<NBITS; i++){
 		input_bits[NBITS-1-i] = input % 2;
-		input = (inputs >> 1);
+		input = (input >> 1);
 		printf("%d", input_bits[NBITS-1-i]);
 	}
 }
@@ -110,9 +122,12 @@ void bin2num(){
 
 
 int main(){
+    io_config();
+    keypad_config();
 
     while(1){
-
+        loop_cols();
+        read_row();
     }
     return 0;
 }

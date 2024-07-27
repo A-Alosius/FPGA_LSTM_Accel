@@ -1,6 +1,6 @@
+#pragma once
 #include <stdio.h>
 #include "MKL25Z4.h"
-#pragma once
 
 // keypad input
 #define R1 (17) // PTA17
@@ -14,11 +14,15 @@
 #define C4 (10) // PTC10
 
 //Other useful functions:
-void read_input(void);
-void loop_rows(void);
+void read_row(void);
+void loop_cols(void);
 void keypad_config(void);
+void compute_key(void);
 
 uint8_t col1, col2, col3, col4;
+uint16_t key;
+uint8_t keys[5];
+uint8_t degree = 0;
 
 void keypad_config(){
 	// configure cols as output
@@ -47,54 +51,64 @@ void keypad_config(){
 
 void read_row(){
 	if (!PTA->PDIR & MASK(R1) && col1){
-		key = 1;
+		keys[degree] = 1;
+		degree++;
 	}
 	else if (!PTA->PDIR & MASK(R2) && col1){
-		key = 4;
+		keys[degree] = 4;
+		degree++;
 	}
 	else if (!PTC->PDIR & MASK(R3) && col1){
-		key = 7;
+		keys[degree] = 7;
+		degree++;
 	}
 	else if (!PTC->PDIR & MASK(R4) && col1){
-		key = 42;
+		degree--;
 	}
 	else if (!PTA->PDIR & MASK(R1) && col2){
-		key = 2;
+		keys[degree] = 2;
+		degree++;
 	}
 	else if (!PTA->PDIR & MASK(R2) && col2){
-		key = 5;
+		keys[degree] = 5;
+		degree++;
 	}
 	else if (!PTC->PDIR & MASK(R3) && col2){
-		key = 8;
+		keys[degree] = 8;
+		degree++;
 	}
 	else if (!PTC->PDIR & MASK(R4) && col2){
-		key = 0;
+		keys[degree] = 0;
+		degree++;
 	}
 	else if (!PTA->PDIR & MASK(R1) && col3){
-		key = 3;
+		keys[degree] = 3;
+		degree++;
 	}
 	else if (!PTA->PDIR & MASK(R2) && col3){
-		key = 6;
+		keys[degree] = 6;
+		degree++;
 	}
 	else if (!PTC->PDIR & MASK(R3) && col3){
-		key = 9;
+		keys[degree] = 9;
+		degree++;
 	}
 	else if (!PTC->PDIR & MASK(R4) && col3){
-		key = 35;
+		compute_key();
 	}
 	else if (!PTA->PDIR & MASK(R1) && col4){
-		key = 65;
+		// degree--; clk signal
 	}
 	else if (!PTA->PDIR & MASK(R2) && col4){
-		key = 66;
+		// keys[degree] = 66; ctrl 1
 	}
 	else if (!PTC->PDIR & MASK(R3) && col4){
-		key = 67;
+		// keys[degree] = 67; ctrl 0
 	}
 	else if (!PTC->PDIR & MASK(R4) && col4){
-		key = 68;
+		// keys[degree] = 68; sign
 	}
-	else key = 'a';
+	else keys[degree] = 'a';
 }
 
 // flaw with this approach is that you'll wait for whole main to run before checking again which could be slow for larger programs. Alternative will be timer
@@ -151,4 +165,12 @@ void loop_cols(){
 			state = s1;
 			break;
 	}
+}
+
+void compute_key(){
+	key = 0;
+	for (int i = 0; i < degree; i++){
+		key += keys[i] * pow(degree-1-i);
+	}
+	degree = 0;
 }
