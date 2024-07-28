@@ -3,6 +3,7 @@ from Component import Component
 from Activation import Sigmoid, Tanh, Activate_Vector
 from Arithmetic import MatrixMultiplier, Adder, HigherBiasAdder, Multiplier, ElementWiseMultiplier
 from Config_generator import Configuration
+import numpy as np
 
 matmul = MatrixMultiplier()
 elmul = ElementWiseMultiplier()
@@ -15,9 +16,9 @@ tanh = Tanh()
 class Gate(Component):
     def __init__(self, gate:str, input_weights, gate_biases, short_weights, activation:str):
         self.gate = gate
-        self.input_weights = input_weights
+        self.input_weights = (np.array(input_weights).transpose().tolist())
         self.gate_biases = gate_biases
-        self.short_weights = short_weights
+        self.short_weights = (np.array(short_weights).transpose().tolist())
         self.activation = activation
 
     @property
@@ -326,7 +327,6 @@ class LSTM_Cell(Component):
         signal input_gate_done        : std_logic;
 
         signal input_candidate_en     : std_logic;
-        signal update_long_en         : std_logic;
         signal long_update_done       : std_logic;
         signal sum_update_en          : std_logic;
         signal long_tmp1_done         : std_logic;
@@ -540,10 +540,10 @@ class LSTM_Unit(Component):
 
 if __name__ == "__main__":
     data = [
-{'input_weights': 1048, 'gate_biases': 993998, 'short_weights': 667},
-{'input_weights': -1187, 'gate_biases': 489871, 'short_weights': 777},
-{'input_weights': 869, 'gate_biases': -256319, 'short_weights': 1194},
-{'input_weights': 1297, 'gate_biases': 548073, 'short_weights': 235}]
-    lSTM_Unit = LSTM_Unit(data[0], data[2], data[1], data[3], 4, [1, 1], [1, 1])
+{'input_weights': [[500, -100], [300, 200]], 'gate_biases': [100000, -200000], 'short_weights': [[100, -300], [-200, 100]]},
+{'input_weights': [[400, -300], [300, 100]], 'gate_biases': [100000, -100000], 'short_weights': [[200, 500], [100, -200]]},
+{'input_weights': [[600, -200], [-100, 300]], 'gate_biases': [-100000, 100000], 'short_weights': [[200, -400], [300, 100]]},
+{'input_weights': [[500, 100], [-300, 200]], 'gate_biases': [0, 100000], 'short_weights': [[400, -200], [200, 300]]}]
+    lSTM_Unit = LSTM_Unit(data[0], data[2], data[1], data[3], 3, [1, 2], [2, 2])
     print(lSTM_Unit.writeToFle())
 
