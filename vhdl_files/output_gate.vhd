@@ -100,7 +100,6 @@ use work.config.all;
 
         begin
             -- initialise weights and biases if of array type
-
             input_weights(0) <= (500, -300);
 			input_weights(1) <= (100, 200);
 			
@@ -179,10 +178,10 @@ use work.config.all;
             if rising_edge(clk) then
                 if long_done = '1' then
                      for i in 0 to long_tmp'length-1 loop
-	for j in 0 to long_tmp(i)'length-1 loop
-	scaled_down_tmp(i)(j) <= long_tmp(i)(j)/1000;
-	end loop;
-end loop;
+                        for j in 0 to long_tmp(i)'length-1 loop
+                            scaled_down_tmp(i)(j) <= long_tmp(i)(j)/1000;
+                        end loop;
+                    end loop;
                     scale_done <= '1';
                 end if;
             end if;

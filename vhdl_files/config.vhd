@@ -9,10 +9,7 @@
             -- input constants
             constant n_row: const_int := 0;
             constant n_col: const_int := 1;
-            -- input types
-            type input_row is array (0 to n_col) of const_int;
-            type input_type is array (0 to n_row) of input_row;
-            
+           
             -- gate constants
             constant n_w_row : const_int := 1;
             constant n_w_col : const_int := 1;

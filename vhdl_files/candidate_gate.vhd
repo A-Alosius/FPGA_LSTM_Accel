@@ -54,7 +54,7 @@ use work.config.all;
         end component;
         
         
-        component sigmoid is
+        component tanh_activation is
             port (
                 clk    : in std_logic;
                 en     : in std_logic;
@@ -65,7 +65,7 @@ use work.config.all;
         end component;
         
         
-        component vector_activation_sig is
+        component vector_activation_tanh is
             port (
                 clk    : in std_logic;
                 en     : in std_logic;
@@ -100,7 +100,6 @@ use work.config.all;
 
         begin
             -- initialise weights and biases if of array type
-
             input_weights(0) <= (400, 300);
 			input_weights(1) <= (-300, 100);
 			
@@ -179,10 +178,10 @@ use work.config.all;
             if rising_edge(clk) then
                 if long_done = '1' then
                      for i in 0 to long_tmp'length-1 loop
-	for j in 0 to long_tmp(i)'length-1 loop
-	scaled_down_tmp(i)(j) <= long_tmp(i)(j)/1000;
-	end loop;
-end loop;
+                        for j in 0 to long_tmp(i)'length-1 loop
+                            scaled_down_tmp(i)(j) <= long_tmp(i)(j)/1000;
+                        end loop;
+                    end loop;
                     scale_done <= '1';
                 end if;
             end if;
@@ -191,7 +190,7 @@ end loop;
         activate : for i in 0 to long_tmp'length - 1 generate
             
             
-        vector_activation_sig_inst_0: vector_activation_sig port map(
+        vector_activation_tanh_inst_0: vector_activation_tanh port map(
             clk    => clk,
             EN     => scale_done,
             vector => scaled_down_tmp(i),

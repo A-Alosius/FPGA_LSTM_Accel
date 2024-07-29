@@ -146,7 +146,7 @@ class Gate(Component):
         ------------------------------------------
 
         begin
-            -- initialise weights and biases if of array type\n
+            -- initialise weights and biases if of array type
             {self.values(self.input_weights, 'input_weights') if type(self.input_weights)==list else ''}
             {self.values(self.short_weights, 'short_weights') if type(self.short_weights)==list else ''}
             {self.values(self.gate_biases, 'gate_biases') if type(self.gate_biases)==list else ''}
@@ -193,7 +193,11 @@ class Gate(Component):
             if rising_edge(clk) then
                 if long_done = '1' then
                      {'scaled_down_tmp <= long_tmp/1000;' if (type(self.input_weights) != list) else 
-                     "for i in 0 to long_tmp'length-1 loop\n\tfor j in 0 to long_tmp(i)'length-1 loop\n\tscaled_down_tmp(i)(j) <= long_tmp(i)(j)/1000;\n\tend loop;\nend loop;"}
+                     '''for i in 0 to long_tmp'length-1 loop
+                        for j in 0 to long_tmp(i)'length-1 loop
+                            scaled_down_tmp(i)(j) <= long_tmp(i)(j)/1000;
+                        end loop;
+                    end loop;'''}
                     scale_done <= '1';
                 end if;
             end if;
@@ -286,8 +290,8 @@ class LSTM_Cell(Component):
 
     def toVHDL(self) -> str:
         forgetGate = Gate('forget_gate', self.forget_data["input_weights"], self.forget_data["gate_biases"], self.forget_data["short_weights"], 'sig')
-        inputGate = Gate('input_gate', self.input_data["input_weights"], self.input_data["gate_biases"], self.input_data["short_weights"], 'tanh')
-        candidateGate = Gate('candidate_gate', self.candidate_data["input_weights"], self.candidate_data["gate_biases"], self.candidate_data["short_weights"], 'sig')
+        inputGate = Gate('input_gate', self.input_data["input_weights"], self.input_data["gate_biases"], self.input_data["short_weights"], 'sig')
+        candidateGate = Gate('candidate_gate', self.candidate_data["input_weights"], self.candidate_data["gate_biases"], self.candidate_data["short_weights"], 'tanh')
         outputGate = Gate('output_gate', self.output_data["input_weights"], self.output_data["gate_biases"], self.output_data["short_weights"], 'sig')
         activate_vect = Activate_Vector('tanh')
 
@@ -391,7 +395,11 @@ class LSTM_Cell(Component):
             if rising_edge(clk) then
                 if long_update_done = '1' then
                     {'scaled_down_tmp <= new_long_memory/1000;' if (type(self.input_data['input_weights']) != list) else 
-                     "for i in 0 to new_long_memory'length-1 loop\n\t\t\t\t\t\tfor j in 0 to new_long_memory(i)'length-1 loop\n\t\t\t\t\t\t\tscaled_down_tmp(i)(j) <= new_long_memory(i)(j)/1000;\n\t\t\t\t\t\tend loop;\n\t\t\t\t\tend loop;"}
+                     '''for i in 0 to new_long_memory'length-1 loop
+                            for j in 0 to new_long_memory(i)'length-1 loop
+                                scaled_down_tmp(i)(j) <= new_long_memory(i)(j)/1000;
+                            end loop;
+                        end loop;'''}
                     scale_done <= '1';
                 end if;
             end if;
@@ -411,7 +419,11 @@ class LSTM_Cell(Component):
             if rising_edge(clk) then
                 if short_scale_done = '1' then
                     {'new_short <= tmp_new_short/1000;' if (type(self.input_data['input_weights']) != list)
-                     else "for i in 0 to new_short'length-1 loop\n\t\t\t\t\t\tfor j in 0 to new_short(0)'length-1 loop\n\t\t\t\t\t\t\tnew_short(i)(j) <= tmp_new_short(i)(j)/1000;\n\t\t\t\t\t\tend loop;\n\t\t\t\t\tend loop;"}
+                     else '''for i in 0 to new_short'length-1 loop
+                        for j in 0 to new_short(0)'length-1 loop
+                            new_short(i)(j) <= tmp_new_short(i)(j)/1000;
+                        end loop;
+                    end loop;'''}
                     new_long <= scaled_down_tmp;
                     done <= '1';
                 end if;
@@ -519,12 +531,15 @@ class LSTM_Unit(Component):
         architecture Behavioral of {self.name} is
         {lstm_cell.getComponent()}
 
-        {''.join([f'signal unit{i+1}_done: std_logic;\n\t\t' for i in range(self.n_inputs-1)])}
+        {''.join([f'''signal unit{i+1}_done: std_logic;
+                  ''' for i in range(self.n_inputs-1)])}
         
         signal short : output_type{' := 0 ' if arr != 1 else ''};
         signal long  : output_type {' :=0 ' if arr != 1 else ''}; -- input to first cell of lstm_unit
 
-        {''.join([f'signal short{i+1} : output_type;\n\t\tsignal long{i+1} : output_type;\n\n\t\t' for i in range(self.n_inputs)])}
+        {''.join([f'''signal short{i+1} : output_type;
+                  signal long{i+1} : output_type;
+                  ''' for i in range(self.n_inputs)])}
 
         begin
         {self.values([[0 for _ in range(self.input_shape[1])] for _ in range(self.input_shape[0])], 'short') if arr else ''}

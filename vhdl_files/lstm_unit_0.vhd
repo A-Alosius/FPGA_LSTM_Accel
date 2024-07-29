@@ -39,22 +39,19 @@ use work.config.all;
         
 
         signal unit1_done: std_logic;
-		signal unit2_done: std_logic;
-		
+                  signal unit2_done: std_logic;
+                  
         
         signal short : output_type;
         signal long  : output_type ; -- input to first cell of lstm_unit
 
         signal short1 : output_type;
-		signal long1 : output_type;
-
-		signal short2 : output_type;
-		signal long2 : output_type;
-
-		signal short3 : output_type;
-		signal long3 : output_type;
-
-		
+                  signal long1 : output_type;
+                  signal short2 : output_type;
+                  signal long2 : output_type;
+                  signal short3 : output_type;
+                  signal long3 : output_type;
+                  
 
         begin
         short(0) <= (0, 0);
