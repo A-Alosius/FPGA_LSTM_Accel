@@ -5,6 +5,7 @@ import math
 input_range = [-1, 5]
 precision = 0.01
 dp = 3
+
 class Activation(Component):
     """Base for all activation functions"""
     count = 0
