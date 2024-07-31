@@ -10,11 +10,12 @@ elmul = ElementWiseMultiplier()
 mul = Multiplier()
 add = Adder()
 hadder = HigherBiasAdder()
-sig = Sigmoid()
-tanh = Tanh()
 
 class Gate(Component):
-    def __init__(self, gate:str, input_weights, gate_biases, short_weights, activation:str):
+    def __init__(self, input_range, accuracy, dp, gate:str, input_weights, gate_biases, short_weights, activation:str):
+        self.input_range = input_range
+        self.accuracy = accuracy
+        self.dp = dp
         self.gate = gate
         self.input_weights = (np.array(input_weights).transpose().tolist())
         self.gate_biases = gate_biases
@@ -96,6 +97,9 @@ class Gate(Component):
         """
     
     def toVHDL(self) -> str:
+        sig = Sigmoid(self.input_range, self.accuracy, self.dp)
+        tanh = Tanh(self.input_range, self.accuracy, self.dp)
+
         tanh.writeToFle()
         sig.writeToFle()
         if (type(self.input_weights) != list):
@@ -104,7 +108,7 @@ class Gate(Component):
         else:
             hadder.writeToFle()
             matmul.writeToFle()
-            act = Activate_Vector(self.activation)
+            act = Activate_Vector(self.activation, self.input_range, self.accuracy, self.dp)
             act.writeToFle()
             elmul.writeToFle()
         
@@ -192,10 +196,10 @@ class Gate(Component):
         begin
             if rising_edge(clk) then
                 if long_done = '1' then
-                     {'scaled_down_tmp <= long_tmp/1000;' if (type(self.input_weights) != list) else 
-                     '''for i in 0 to long_tmp'length-1 loop
+                     {f'scaled_down_tmp <= long_tmp/{10**self.dp};' if (type(self.input_weights) != list) else 
+                     f'''for i in 0 to long_tmp'length-1 loop
                         for j in 0 to long_tmp(i)'length-1 loop
-                            scaled_down_tmp(i)(j) <= long_tmp(i)(j)/1000;
+                            scaled_down_tmp(i)(j) <= long_tmp(i)(j)/{10**self.dp};
                         end loop;
                     end loop;'''}
                     scale_done <= '1';
@@ -232,7 +236,10 @@ class Gate(Component):
 
 class LSTM_Cell(Component):
     count = 0
-    def __init__(self, forget_data, input_data, candidate_data, output_data):
+    def __init__(self, input_range, accuracy, dp, forget_data, input_data, candidate_data, output_data):
+        self.input_range = input_range
+        self.accuracy = accuracy
+        self.dp = dp
         self.input_data = input_data
         self.candidate_data = candidate_data
         self.output_data = output_data
@@ -289,11 +296,12 @@ class LSTM_Cell(Component):
         """
 
     def toVHDL(self) -> str:
-        forgetGate = Gate('forget_gate', self.forget_data["input_weights"], self.forget_data["gate_biases"], self.forget_data["short_weights"], 'sig')
-        inputGate = Gate('input_gate', self.input_data["input_weights"], self.input_data["gate_biases"], self.input_data["short_weights"], 'sig')
-        candidateGate = Gate('candidate_gate', self.candidate_data["input_weights"], self.candidate_data["gate_biases"], self.candidate_data["short_weights"], 'tanh')
-        outputGate = Gate('output_gate', self.output_data["input_weights"], self.output_data["gate_biases"], self.output_data["short_weights"], 'sig')
-        activate_vect = Activate_Vector('tanh')
+        forgetGate = Gate(self.input_range, self.accuracy, self.dp, 'forget_gate', self.forget_data["input_weights"], self.forget_data["gate_biases"], self.forget_data["short_weights"], 'sig')
+        inputGate = Gate(self.input_range, self.accuracy, self.dp, 'input_gate', self.input_data["input_weights"], self.input_data["gate_biases"], self.input_data["short_weights"], 'sig')
+        candidateGate = Gate(self.input_range, self.accuracy, self.dp, 'candidate_gate', self.candidate_data["input_weights"], self.candidate_data["gate_biases"], self.candidate_data["short_weights"], 'tanh')
+        outputGate = Gate(self.input_range, self.accuracy, self.dp, 'output_gate', self.output_data["input_weights"], self.output_data["gate_biases"], self.output_data["short_weights"], 'sig')
+        tanh = Tanh(self.input_range, self.accuracy, self.dp)
+        activate_vect = Activate_Vector('tanh', self.input_range, self.accuracy, self.dp)
 
         (forgetGate.writeToFle())
         (inputGate.writeToFle())
@@ -395,9 +403,9 @@ class LSTM_Cell(Component):
             if rising_edge(clk) then
                 if long_update_done = '1' then
                     {'scaled_down_tmp <= new_long_memory/1000;' if (type(self.input_data['input_weights']) != list) else 
-                     '''for i in 0 to new_long_memory'length-1 loop
+                     f'''for i in 0 to new_long_memory'length-1 loop
                             for j in 0 to new_long_memory(i)'length-1 loop
-                                scaled_down_tmp(i)(j) <= new_long_memory(i)(j)/1000;
+                                scaled_down_tmp(i)(j) <= new_long_memory(i)(j)/{10**self.dp};
                             end loop;
                         end loop;'''}
                     scale_done <= '1';
@@ -419,9 +427,9 @@ class LSTM_Cell(Component):
             if rising_edge(clk) then
                 if short_scale_done = '1' then
                     {'new_short <= tmp_new_short/1000;' if (type(self.input_data['input_weights']) != list)
-                     else '''for i in 0 to new_short'length-1 loop
+                     else f'''for i in 0 to new_short'length-1 loop
                         for j in 0 to new_short(0)'length-1 loop
-                            new_short(i)(j) <= tmp_new_short(i)(j)/1000;
+                            new_short(i)(j) <= tmp_new_short(i)(j)/{10**self.dp};
                         end loop;
                     end loop;'''}
                     new_long <= scaled_down_tmp;
@@ -435,7 +443,10 @@ class LSTM_Cell(Component):
 
 class LSTM_Unit(Component):
     count = 0
-    def __init__(self, forget_data, input_data, candidate_data, output_data, n_inputs, input_shape, weight_shape):
+    def __init__(self, input_range, accuracy, dp, forget_data, input_data, candidate_data, output_data, n_inputs, input_shape, weight_shape):
+        self.input_range = input_range
+        self.accuracy = accuracy
+        self.dp = dp
         self.weight_shape = weight_shape
         self.n_inputs = n_inputs
         self.input_shape = input_shape
@@ -514,7 +525,7 @@ class LSTM_Unit(Component):
         if (self.input_shape[1] != self.weight_shape[0]):
             print("Incompatible input and weight shapes")
             return
-        lstm_cell = LSTM_Cell(self.forget_data, self.input_data, self.candidate_data, self.output_data)
+        lstm_cell = LSTM_Cell(self.input_range, self.accuracy, self.dp, self.forget_data, self.input_data, self.candidate_data, self.output_data)
         conf = Configuration(self.input_shape, self.weight_shape, self.n_inputs)
         conf.writeToFle()
         lstm_cell.writeToFle()
@@ -559,6 +570,6 @@ if __name__ == "__main__":
 {'input_weights': [[400, -300], [300, 100]], 'gate_biases': [100000, -100000], 'short_weights': [[200, 500], [100, -200]]},
 {'input_weights': [[600, -200], [-100, 300]], 'gate_biases': [-100000, 100000], 'short_weights': [[200, -400], [300, 100]]},
 {'input_weights': [[500, 100], [-300, 200]], 'gate_biases': [0, 100000], 'short_weights': [[400, -200], [200, 300]]}]
-    lSTM_Unit = LSTM_Unit(data[0], data[2], data[1], data[3], 3, [1, 2], [2, 2])
+    lSTM_Unit = LSTM_Unit([-1, 10], 0.01, 3, data[0], data[2], data[1], data[3], 3, [1, 2], [2, 2])
     print(lSTM_Unit.writeToFle())
 

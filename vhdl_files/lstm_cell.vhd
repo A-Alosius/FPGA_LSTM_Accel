@@ -75,25 +75,24 @@ use work.config.all;
         end component;
         
         
-        component matrix_multiplier is
+        component multiplier is
             port(
                 clk           : in std_logic;
                 EN            : in std_logic;
-                mat1          : in output_type;
-                mat2          : in weight_type;
-                mat12         : out output_type;
+                num1, num2    : in const_int;
+                prod          : out const_int;
                 done          : out std_logic
             );
         end component;
         
         
-        component higher_adder is
+        component adder is
             port(
                 clk           : in std_logic;
                 EN            : in std_logic;
-                input         : in output_type;
-                bias          : in output_type;
-                sum           : out output_type;
+                input         : in const_int;
+                bias          : in const_int;
+                sum           : out const_int;
                 done          : out std_logic
             );
         end component;
@@ -110,27 +109,6 @@ use work.config.all;
         end component;
         
         
-        component element_wise_multiplier is
-            port(
-                clk           : in std_logic;
-                EN            : in std_logic;
-                mat1          : in output_type;
-                mat2          : in output_type;
-                mat12         : out output_type;
-                done          : out std_logic
-            );
-        end component;
-        
-        
-        component vector_activation_tanh is
-            port (
-                clk    : in std_logic;
-                en     : in std_logic;
-                vector : in output_row;
-                result : out output_row;
-                done   : out std_logic
-            );
-        end component;
         
 
         signal forget_gate_output     : output_type; -- long_remember percent
@@ -198,12 +176,12 @@ use work.config.all;
         
 
         
-        element_wise_multiplier_inst_0: element_wise_multiplier port map(
+        multiplier_inst_8: multiplier port map(
             clk   => clk,
             EN    => forget_gate_done,
-            mat1  => long,
-            mat2  => forget_gate_output,
-            mat12 => long_tmp1,
+            num1  => long,
+            num2  => forget_gate_output,
+            prod  => long_tmp1,
             done  => long_tmp1_done
         );
         
@@ -220,12 +198,12 @@ use work.config.all;
         end process;
 
         
-        element_wise_multiplier_inst_1: element_wise_multiplier port map(
+        multiplier_inst_9: multiplier port map(
             clk   => clk,
             EN    => input_candidate_en,
-            mat1  => candidate_gate_output,
-            mat2  => input_gate_output,
-            mat12 => long_tmp2,
+            num1  => candidate_gate_output,
+            num2  => input_gate_output,
+            prod  => long_tmp2,
             done  => long_tmp2_done
         );
         
@@ -240,10 +218,10 @@ use work.config.all;
         end process;
 
         
-        higher_adder_inst_8: higher_adder port map(
+        adder_inst_8 : adder port map(
             clk          => clk,
             EN           => sum_update_en,
-            input       => long_tmp1,
+            input        => long_tmp1,
             bias         => long_tmp2,
             sum          => new_long_memory,
             done         => long_update_done
@@ -265,36 +243,32 @@ use work.config.all;
         begin
             if rising_edge(clk) then
                 if long_update_done = '1' then
-                    for i in 0 to new_long_memory'length-1 loop
-                            for j in 0 to new_long_memory(i)'length-1 loop
-                                scaled_down_tmp(i)(j) <= new_long_memory(i)(j)/1000;
-                            end loop;
-                        end loop;
+                    scaled_down_tmp <= new_long_memory/1000;
                     scale_done <= '1';
                 end if;
             end if;
         end process;
 
-        activate : for i in 0 to new_long_memory'length - 1 generate
+        
             
-            
-        vector_activation_tanh_inst_0: vector_activation_tanh port map(
+        tanh_activation_inst_0: tanh_activation port map(
             clk    => clk,
             EN     => scale_done,
-            vector => scaled_down_tmp(i),
-            result => output_tmp(i),
+            num    => scaled_down_tmp,
+            result => output_tmp,
             done   => tmp_active_done
         );
         
-        end generate activate;
+            
+        
 
         
-        element_wise_multiplier_inst_2: element_wise_multiplier port map(
+        multiplier_inst_10: multiplier port map(
             clk   => clk,
             EN    => tmp_active_done,
-            mat1  => output_tmp,
-            mat2  => output_gate_output,
-            mat12 => tmp_new_short,
+            num1  => output_tmp,
+            num2  => output_gate_output,
+            prod  => tmp_new_short,
             done  => short_scale_done
         );
         
@@ -303,11 +277,7 @@ use work.config.all;
         begin
             if rising_edge(clk) then
                 if short_scale_done = '1' then
-                    for i in 0 to new_short'length-1 loop
-                        for j in 0 to new_short(0)'length-1 loop
-                            new_short(i)(j) <= tmp_new_short(i)(j)/1000;
-                        end loop;
-                    end loop;
+                    new_short <= tmp_new_short/1000;
                     new_long <= scaled_down_tmp;
                     done <= '1';
                 end if;

@@ -8,17 +8,17 @@
             subtype const_int is integer range integer'low to integer'high;
             -- input constants
             constant n_row: const_int := 0;
-            constant n_col: const_int := 1;
+            constant n_col: const_int := 0;
            
             -- gate constants
-            constant n_w_row : const_int := 1;
-            constant n_w_col : const_int := 1;
+            constant n_w_row : const_int := 0;
+            constant n_w_col : const_int := 0;
             -- gate types
-            type weight_row is array (0 to n_w_col) of const_int;
-            type weight_type is array (0 to n_w_row) of weight_row;
+            
+            subtype weight_type is integer range integer'low to integer'high;
             -- output type
-            type output_row is array(0 to n_w_row) of const_int;
-            type output_type is array (0 to n_row) of output_row;
-            type input_array is array(0 to 2) of output_type;
+            
+            subtype output_type is integer range integer'low to integer'high;
+            type input_array is array(0 to 3) of output_type;
         end package;
         

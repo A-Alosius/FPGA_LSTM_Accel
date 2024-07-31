@@ -2,13 +2,19 @@ from Constants import VHDL_LIBRARIES, VHDL_LIBRARY_DECLARATION
 from Component import Component
 import math
 
-input_range = [-1, 5]
-precision = 0.01
-dp = 3
+# input_range = [-1, 5]
+# precision = 0.01
+# dp = 3
 
 class Activation(Component):
     """Base for all activation functions"""
     count = 0
+
+    def __init__(self, input_range, accuracy, dp):
+        self.input_range = input_range
+        self.accuracy = accuracy
+        self.dp = dp
+
     @property
     def name(self):
         return 'null_activation'
@@ -58,17 +64,17 @@ class Sigmoid(Activation):
     def name(self):
         return 'sigmoid'
     
-    def values(self, input_range, precision):
+    def values(self):
         sig = []
-        i = input_range[0]
-        while i < input_range[1]:
-            sig.append(int((1/(1 + math.exp(-i)))*10**dp))
-            i += precision
+        i = self.input_range[0]
+        while i < self.input_range[1]:
+            sig.append(int((1/(1 + math.exp(-i)))*10**self.dp))
+            i += self.accuracy
         return sig
 
     
     def toVHDL(self):
-        sig = self.values(input_range, precision)
+        sig = self.values()
         rom = "("
         k = 0
 
@@ -100,8 +106,8 @@ class Sigmoid(Activation):
 
                 if rising_edge(clk) then
                     if EN = '1' then
-                        if num > {int((input_range[0]/precision)*(precision*10**dp))} and num < {(len(sig)-1)*int(precision*10**dp)} then
-                            result <= sigm(({int((0-input_range[0])/precision)}) + num/{int(precision*10**dp)}); -- take note of precision if 0.1 leave as is if 0.01 divide by 1
+                        if num > {int((self.input_range[0]/self.accuracy)*(self.accuracy*10**self.dp))} and num < {(len(sig)-1)*int(self.accuracy*10**self.dp)} then
+                            result <= sigm(({int((0-self.input_range[0])/self.accuracy)}) + num/{int(self.accuracy*10**self.dp)}); -- take note of precision if 0.1 leave as is if 0.01 divide by 1
                             done <= '1';
                         else
                             result <= 0;
@@ -122,17 +128,17 @@ class Tanh(Activation):
     def name(self):
         return 'tanh_activation'
     
-    def values(self, input_range, precision):
+    def values(self):
         tanh = []
-        i = input_range[0]
-        while i < input_range[1]:
-            tanh.append(int(math.tanh(i)*10**dp))
-            i += precision
+        i = self.input_range[0]
+        while i < self.input_range[1]:
+            tanh.append(int(math.tanh(i)*10**self.dp))
+            i += self.accuracy
         return tanh
 
     
     def toVHDL(self):
-        tanh = self.values(input_range, precision)
+        tanh = self.values()
         rom = "("
         k = 0
 
@@ -164,8 +170,8 @@ class Tanh(Activation):
 
                 if rising_edge(clk) then
                     if EN = '1' then
-                        if num > {int((input_range[0]/precision)*(precision*10**dp))} and num < {(len(tanh)-1)*int(precision*10**dp)} then
-                            result <= tanh(({int((0-input_range[0])/precision)}) + num/{int(precision*10**dp)}); -- take note of precision if 0.1 leave as is if 0.01 divide by 1
+                        if num > {int((self.input_range[0]/self.accuracy)*(self.accuracy*10**self.dp))} and num < {(len(tanh)-1)*int(self.accuracy*10**self.dp)} then
+                            result <= tanh(({int((0-self.input_range[0])/self.accuracy)}) + num/{int(self.accuracy*10**self.dp)}); -- take note of precision if 0.1 leave as is if 0.01 divide by 1
                             done <= '1';
                         else
                             result <= 0;
@@ -181,7 +187,10 @@ class Tanh(Activation):
     
 class Activate_Vector(Component):
     count = 0
-    def __init__(self, activation) -> None:
+    def __init__(self, activation, input_range, accuracy, dp) -> None:
+        self.input_range = input_range
+        self.accuracy = accuracy
+        self.dp = dp
         self.activation = activation
     
     @property
@@ -228,9 +237,9 @@ class Activate_Vector(Component):
     
     def toVHDL(self):
         if self.activation == 'sig':
-            act = Sigmoid()
+            act = Sigmoid(self.input_range, self.accuracy, self.dp)
         else:
-            act = Tanh()
+            act = Tanh(self.input_range, self.accuracy, self.dp)
 
         return f"""
         {VHDL_LIBRARIES}
@@ -259,7 +268,7 @@ class Activate_Vector(Component):
         end behavioral;
         """
 if __name__ == "__main__":
-    testActivation = Tanh()
+    testActivation = Tanh([-1, 10], 0.01, 3)
     # a = testActivation.values(input_range, precision)
     # sig = Sigmoid().values(input_range, precision)
     # print(len(a))

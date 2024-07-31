@@ -11,8 +11,11 @@ class Communication(Component):
        - Passes input array to LSTM_Unit to perform inference
        - Converts inferred result to bin and for microcontroller to read
     """
-    def __init__(self, nbits, forget_data, input_data, candidate_data, output_data, n_inputs, input_shape, weight_shape):
+    def __init__(self, nbits, input_range, accuracy, dp, forget_data, input_data, candidate_data, output_data, n_inputs, input_shape, weight_shape):
         self.nbits = nbits
+        self.input_range = input_range
+        self.accuracy = accuracy
+        self.dp = dp
         self.weight_shape = weight_shape
         self.n_inputs = n_inputs
         self.input_shape = input_shape
@@ -30,6 +33,7 @@ class Communication(Component):
         entity {self.name} is
             port (
                 clk    : in std_logic;
+                mcu_clk: in std_logic;
                 en     : in std_logic;
                 rst    : in std_logic;
                 ctrl   : in std_logic_vector(1 downto 0);
@@ -44,6 +48,7 @@ class Communication(Component):
         component {self.name} is
             port (
                 clk    : in std_logic;
+                mcu_clk: in std_logic;
                 en     : in std_logic;
                 rst    : in std_logic;
                 ctrl   : in std_logic_vector(1 downto 0);
@@ -53,10 +58,11 @@ class Communication(Component):
         end component;
         """
     
-    def getInstance(self, clk, EN, rst, ctrl, inbits, outbits):
+    def getInstance(self, clk, mcu_clk, EN, rst, ctrl, inbits, outbits):
         return f"""
         {self.name}_inst: {self.name} port map(
             clk     => {clk},
+            mcu_clk => {mcu_clk},
             EN      => {EN},
             rst     => {rst},
             ctrl    => {ctrl},
@@ -66,7 +72,7 @@ class Communication(Component):
         """
     
     def toVHDL(self):
-        lstm_unit = LSTM_Unit(self.forget_data, self.input_data, self.candidate_data, self.output_data, self.n_inputs, self.input_shape, self.weight_shape)
+        lstm_unit = LSTM_Unit(self.input_range, self.accuracy, self.dp, self.forget_data, self.input_data, self.candidate_data, self.output_data, self.n_inputs, self.input_shape, self.weight_shape)
         num2bin   = Num2Bin(self.nbits)
         input_picker = Input_Picker(self.nbits)
 
@@ -104,6 +110,7 @@ class Communication(Component):
         signal tmp_num 			 : integer;
 
         signal output 			 : integer;
+        signal tmp_bits          : std_logic_vector({self.nbits-1} downto 0);
         signal sum_done			 : std_logic;
 
         begin
@@ -113,7 +120,6 @@ class Communication(Component):
                 -- if you reset, set ctrl_signal to idle too
                 
                 if rst = '1' then
-                    outbits <= (others=>'0');
                     null;
                 else
                     if rising_edge(clk) then
@@ -176,7 +182,17 @@ class Communication(Component):
                 end if;
             end process;
 
-            {num2bin.getInstance('clk', 'num2bin_en', 'output', 'outbits', 'num2bin_done')}
+            {num2bin.getInstance('clk', 'num2bin_en', 'output', 'tmp_bits', 'num2bin_done')}
+
+            process(clk)
+            begin
+                if rising_edge(clk) then
+                    if num2bin_done = '1' then
+                        outbits <= tmp_bits;
+                    end if;
+                end if;
+            end process;
+
         end behavioral;
         """
 
@@ -272,5 +288,5 @@ if __name__ == "__main__":
 {'input_weights': 869, 'gate_biases': -256319, 'short_weights': 1194},
 {'input_weights': 1297, 'gate_biases': 548073, 'short_weights': 235}]
     nbits = 10
-    comms = Communication(nbits, data[0], data[2], data[1], data[3], 4, [1, 1], [1, 1])
+    comms = Communication(nbits, [-1,10], 0.01, 3, data[0], data[2], data[1], data[3], 4, [1, 1], [1, 1])
     comms.writeToFle()
