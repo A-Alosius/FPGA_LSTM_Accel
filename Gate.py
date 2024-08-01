@@ -443,7 +443,8 @@ class LSTM_Cell(Component):
 
 class LSTM_Unit(Component):
     count = 0
-    def __init__(self, input_range, accuracy, dp, forget_data, input_data, candidate_data, output_data, n_inputs, input_shape, weight_shape):
+    def __init__(self, nbits, input_range, accuracy, dp, forget_data, input_data, candidate_data, output_data, n_inputs, input_shape, weight_shape):
+        self.nbits = nbits
         self.input_range = input_range
         self.accuracy = accuracy
         self.dp = dp
@@ -526,7 +527,7 @@ class LSTM_Unit(Component):
             print("Incompatible input and weight shapes")
             return
         lstm_cell = LSTM_Cell(self.input_range, self.accuracy, self.dp, self.forget_data, self.input_data, self.candidate_data, self.output_data)
-        conf = Configuration(self.input_shape, self.weight_shape, self.n_inputs)
+        conf = Configuration(self.input_shape, self.weight_shape, self.n_inputs, self.nbits)
         conf.writeToFle()
         lstm_cell.writeToFle()
         arr = 0 if self.input_shape[0] == 1 and self.input_shape[1] == 1 else 1

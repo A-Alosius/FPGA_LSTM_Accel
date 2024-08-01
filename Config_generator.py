@@ -1,10 +1,11 @@
 from Component import Component
 
 class Configuration(Component):
-    def __init__(self,input_shape, weight_shape, n_inputs):
+    def __init__(self,input_shape, weight_shape, n_inputs, nbits):
         self.input_shape = input_shape
         self.weight_shape = weight_shape
         self.n_inputs = n_inputs
+        self.nbits = nbits
 
     @property
     def name(self):
@@ -34,6 +35,7 @@ class Configuration(Component):
             {'type output_row is array(0 to n_w_row) of const_int;' if arr else ''}
             {'type output_type is array (0 to n_row) of output_row;' if arr else "subtype output_type is integer range integer'low to integer'high;"}
             type input_array is array(0 to {self.n_inputs-1}) of output_type;
+            type bin_int_array is array(0 to {self.nbits-1}) of const_int;
         end package;
         """
         

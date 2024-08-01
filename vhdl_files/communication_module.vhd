@@ -88,7 +88,6 @@ use work.config.all;
                 -- if you reset, set ctrl_signal to idle too
                 
                 if rst = '1' then
-                    outbits <= (others=>'0');
                     null;
                 else
                     if rising_edge(clk) then

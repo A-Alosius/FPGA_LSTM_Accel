@@ -26,18 +26,22 @@ def lstm_step(x_t, h_prev, C_prev, W_f_x, W_f_h, b_f, W_i_x, W_i_h, b_i, W_C_x, 
     return h_t, C_t
 
 # Sample weights and biases
+#forget gate weights and biases
 W_f_x = np.array([[0.5, -0.1], [0.3, 0.2]])
 W_f_h = np.array([[0.1, -0.3], [-0.2, 0.1]])
 b_f = np.array([0.1, -0.2])
 
+# input gate weights and biases
 W_i_x = np.array([[0.6, -0.2], [-0.1, 0.3]])
 W_i_h = np.array([[0.2, -0.4], [0.3, 0.1]])
 b_i = np.array([-0.1, 0.1])
 
+# candidate gate weights and biases
 W_C_x = np.array([[0.4, -0.3], [0.3, 0.1]])
 W_C_h = np.array([[0.2, 0.5], [0.1, -0.2]])
 b_C = np.array([0.1, -0.1])
 
+#output gate weights and biases
 W_o_x = np.array([[0.5, 0.1], [-0.3, 0.2]])
 W_o_h = np.array([[0.4, -0.2], [0.2, 0.3]])
 b_o = np.array([0.0, 0.1])

@@ -72,7 +72,7 @@ class Communication(Component):
         """
     
     def toVHDL(self):
-        lstm_unit = LSTM_Unit(self.input_range, self.accuracy, self.dp, self.forget_data, self.input_data, self.candidate_data, self.output_data, self.n_inputs, self.input_shape, self.weight_shape)
+        lstm_unit = LSTM_Unit(self.nbits, self.input_range, self.accuracy, self.dp, self.forget_data, self.input_data, self.candidate_data, self.output_data, self.n_inputs, self.input_shape, self.weight_shape)
         num2bin   = Num2Bin(self.nbits)
         input_picker = Input_Picker(self.nbits)
 
