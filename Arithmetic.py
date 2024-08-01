@@ -161,8 +161,6 @@ class HigherBiasAdder(Component):
 # generate vhdl code for together multiplication
 class Multiplier(Component):
     count = 0
-    def __init__(self)->None:
-        pass
 
     @property
     def name(self)->str:
@@ -232,8 +230,6 @@ class Multiplier(Component):
 
 class MatrixMultiplier(Component):
     count = 0
-    def __init__(self)->None:
-        pass
 
     @property
     def name(self)->str:
@@ -322,8 +318,6 @@ class MatrixMultiplier(Component):
 
 class ElementWiseMultiplier(Component):
     count = 0
-    def __init__(self)->None:
-        pass
 
     @property
     def name(self)->str:
