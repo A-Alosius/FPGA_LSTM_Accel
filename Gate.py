@@ -17,9 +17,9 @@ class Gate(Component):
         self.accuracy = accuracy
         self.dp = dp
         self.gate = gate
-        self.input_weights = (np.array(input_weights).transpose().tolist())
+        self.input_weights = (np.array(input_weights).transpose().tolist()) if type(input_weights)==list else input_weights
         self.gate_biases = gate_biases
-        self.short_weights = (np.array(short_weights).transpose().tolist())
+        self.short_weights = (np.array(short_weights).transpose().tolist()) if type(short_weights)==list else short_weights
         self.activation = activation
 
     @property
@@ -402,7 +402,7 @@ class LSTM_Cell(Component):
         begin
             if rising_edge(clk) then
                 if long_update_done = '1' then
-                    {'scaled_down_tmp <= new_long_memory/1000;' if (type(self.input_data['input_weights']) != list) else 
+                    {f'scaled_down_tmp <= new_long_memory/{10**self.dp};' if (type(self.input_data['input_weights']) != list) else 
                      f'''for i in 0 to new_long_memory'length-1 loop
                             for j in 0 to new_long_memory(i)'length-1 loop
                                 scaled_down_tmp(i)(j) <= new_long_memory(i)(j)/{10**self.dp};
@@ -426,7 +426,7 @@ class LSTM_Cell(Component):
         begin
             if rising_edge(clk) then
                 if short_scale_done = '1' then
-                    {'new_short <= tmp_new_short/1000;' if (type(self.input_data['input_weights']) != list)
+                    {f'new_short <= tmp_new_short/{10**self.dp};' if (type(self.input_data['input_weights']) != list)
                      else f'''for i in 0 to new_short'length-1 loop
                         for j in 0 to new_short(0)'length-1 loop
                             new_short(i)(j) <= tmp_new_short(i)(j)/{10**self.dp};
