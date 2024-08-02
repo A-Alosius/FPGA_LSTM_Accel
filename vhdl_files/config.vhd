@@ -20,6 +20,6 @@
             
             subtype output_type is integer range integer'low to integer'high;
             type input_array is array(0 to 3) of output_type;
-            type bin_int_array array(0 to 9) of const_int;
+            type bin_int_array is array(0 to 9) of const_int;
         end package;
         

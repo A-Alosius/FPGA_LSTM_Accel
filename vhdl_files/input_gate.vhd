@@ -22,9 +22,9 @@ use work.config.all;
             );
 
             -- declare and instantiate weight and biases for each gate here
-            signal input_weights : weight_type:= 869;
-            signal gate_biases   : output_type:= -256319;
-            signal short_weights : weight_type:= 1194;
+            signal input_weights : weight_type:= -1187;
+            signal gate_biases   : output_type:= 489871;
+            signal short_weights : weight_type:= 777;
         end entity input_gate;
         
 
