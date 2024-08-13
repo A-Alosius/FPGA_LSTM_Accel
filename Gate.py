@@ -571,6 +571,6 @@ if __name__ == "__main__":
 {'input_weights': [[400, -300], [300, 100]], 'gate_biases': [100000, -100000], 'short_weights': [[200, 500], [100, -200]]},
 {'input_weights': [[600, -200], [-100, 300]], 'gate_biases': [-100000, 100000], 'short_weights': [[200, -400], [300, 100]]},
 {'input_weights': [[500, 100], [-300, 200]], 'gate_biases': [0, 100000], 'short_weights': [[400, -200], [200, 300]]}]
-    lSTM_Unit = LSTM_Unit([-1, 10], 0.01, 3, data[0], data[2], data[1], data[3], 3, [1, 2], [2, 2])
+    lSTM_Unit = LSTM_Unit(10, [-1, 10], 0.01, 3, data[0], data[1], data[2], data[3], 3, [1, 2], [2, 2])
     print(lSTM_Unit.writeToFle())
 

@@ -72,7 +72,8 @@ class Communication(Component):
         """
     
     def toVHDL(self):
-        lstm_unit = LSTM_Unit(self.nbits, self.input_range, self.accuracy, self.dp, self.forget_data, self.input_data, self.candidate_data, self.output_data, self.n_inputs, self.input_shape, self.weight_shape)
+        lstm_unit = LSTM_Unit(self.nbits, self.input_range, self.accuracy, self.dp, self.forget_data, self.input_data, self.candidate_data, self.output_data,
+                               self.n_inputs, self.input_shape, self.weight_shape)
         num2bin   = Num2Bin(self.nbits)
         input_picker = Input_Picker(self.nbits)
 
@@ -288,5 +289,5 @@ if __name__ == "__main__":
 {'input_weights': 869, 'gate_biases': -256319, 'short_weights': 1194},
 {'input_weights': 1297, 'gate_biases': 548073, 'short_weights': 235}]
     nbits = 10
-    comms = Communication(nbits, [-1,10], 0.01, 3, data[0], data[2], data[1], data[3], 4, [1, 1], [1, 1])
+    comms = Communication(nbits, [-1,10], 0.01, 3, data[0], data[1], data[2], data[3], 4, [1, 1], [1, 1])
     comms.writeToFle()

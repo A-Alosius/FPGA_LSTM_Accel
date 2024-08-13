@@ -68,7 +68,7 @@ use work.config.all;
         signal bin2num_en      	 : std_logic;
         signal num2bin_pre_en	 : std_logic;
         signal num2bin_en	  	 : std_logic;
-        signal bin2num_done    	 : std_logic; -- not really necessary here, should go in input_picker
+        signal bin2num_done    	 : std_logic;
         signal num2bin_done      : std_logic;
         signal inputs_ready    	 : std_logic;
 

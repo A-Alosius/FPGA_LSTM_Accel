@@ -4,6 +4,21 @@ class LSTM2VHDL():
     def __init__(self, nbits, input_range, accuracy, dp, forget_data, input_data, candidate_data, output_data, n_inputs, input_shape, weight_shape):
         comms = Communication(nbits, input_range, accuracy, dp, forget_data, input_data, candidate_data, output_data, n_inputs, input_shape, weight_shape)
         comms.writeToFle()
+    
+    def input_format(self, wsh, win, b, dp):
+        if type(b) == float:
+            data = {
+                "input_weights": int(win*10**dp),
+                "gate_biases":int(b*10**(dp*2)),
+                "short_weights":int(wsh*10**dp)
+            }
+        else:
+            data = {
+                "input_weights": [int(x*10**dp) for x in win],
+                "gate_biases":[int(x*10**(dp*2)) for x in b],
+                "short_weights":[int(x*10**dp) for x in wsh]
+            }
+        return data
 
 if __name__ == "__main__":
     data = [
@@ -13,4 +28,4 @@ if __name__ == "__main__":
             {'input_weights': 1297, 'gate_biases': 548073, 'short_weights': 235}
            ]
     nbits = 10
-    model_conv = LSTM2VHDL(nbits, [-1,10], 0.01, 3, data[0], data[2], data[1], data[3], 4, [1, 1], [1, 1])
+    model_conv = LSTM2VHDL(nbits, [-1,10], 0.01, 3, data[0], data[1], data[2], data[3], 4, [1, 1], [1, 1])
